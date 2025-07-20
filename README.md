@@ -60,6 +60,200 @@ src/
 └── main.ts                            # Application bootstrap
 ```
 
+### **Entity Relationship Diagram**
+
+```mermaid
+erDiagram
+    User ||--o{ UserAddress : has
+    UserAddress ||--|| Address : contains
+    UserAddress ||--o| Location : "may have"
+    User ||--|| Email : has
+    User ||--|| Password : has
+    User ||--|| Gender : has
+
+    User {
+        string id PK
+        Email email UK "Unique email address"
+        Password password "Hashed password"
+        string name "Full name"
+        Date dateOfBirth "Date of birth"
+        Gender gender "MALE|FEMALE|OTHER"
+        boolean subscribedToNewsletter "Newsletter subscription"
+        Date createdAt "Creation timestamp"
+        Date updatedAt "Last update timestamp"
+        boolean isDeleted "Soft deletion flag"
+    }
+
+    UserAddress {
+        string id PK
+        string userId FK "References User.id"
+        Address address "Physical address details"
+        AddressType type "HOME|WORK|BILLING|SHIPPING|OTHER"
+        string label "User-defined label"
+        boolean isDefault "Default address flag"
+        Location location "Optional GPS coordinates"
+        string deliveryInstructions "Optional delivery notes"
+        Date createdAt "Creation timestamp"
+        Date updatedAt "Last update timestamp"
+        boolean isDeleted "Soft deletion flag"
+    }
+
+    Address {
+        string street "Street address"
+        string city "City name"
+        string state "State/Province"
+        string postalCode "Postal/ZIP code"
+        string country "Country name"
+    }
+
+    Location {
+        number latitude "GPS latitude (-90 to 90)"
+        number longitude "GPS longitude (-180 to 180)"
+    }
+
+    Email {
+        string value "Normalized email address"
+    }
+
+    Password {
+        string hashedValue "Bcrypt hashed password"
+    }
+
+    Gender {
+        string value "MALE|FEMALE|OTHER"
+    }
+```
+
+### **Domain Model Architecture**
+
+```mermaid
+graph TB
+    subgraph "Domain Layer"
+        subgraph "Entities (Aggregate Roots)"
+            User[User Entity<br/>- Business Logic<br/>- Invariants<br/>- Lifecycle Management]
+            UserAddress[UserAddress Entity<br/>- Address Management<br/>- Default Logic<br/>- Validation Rules]
+        end
+        
+        subgraph "Value Objects"
+            Email[Email VO<br/>- Validation<br/>- Normalization]
+            Password[Password VO<br/>- Hashing<br/>- Strength Validation]
+            Address[Address VO<br/>- Format Validation<br/>- Immutable]
+            Location[Location VO<br/>- GPS Validation<br/>- Distance Calc]
+            Gender[Gender VO<br/>- Enum Validation]
+        end
+        
+        subgraph "Repository Interfaces"
+            UserRepo[UserRepository<br/>Interface]
+            AddressRepo[UserAddressRepository<br/>Interface]
+        end
+    end
+
+    subgraph "Application Layer"
+        subgraph "Commands (Write)"
+            RegUser[RegisterUserCommand]
+            UpdateUser[UpdateUserCommand]
+            AddAddr[AddUserAddressCommand]
+            DelAddr[DeleteUserAddressCommand]
+        end
+        
+        subgraph "Queries (Read)"
+            GetProfile[GetUserProfileQuery]
+            GetAddresses[GetUserAddressesQuery]
+        end
+        
+        subgraph "Handlers"
+            CmdHandlers[Command Handlers<br/>- Business Logic<br/>- Validation<br/>- Persistence]
+            QueryHandlers[Query Handlers<br/>- Data Retrieval<br/>- DTO Mapping]
+        end
+    end
+
+    subgraph "Infrastructure Layer"
+        subgraph "Database Adapters"
+            MockDB[Mock Database Adapter<br/>- In-Memory Storage<br/>- Development/Testing]
+            PostgresDB[PostgreSQL Adapter<br/>- Production Database<br/>- Persistence]
+        end
+        
+        subgraph "Repository Implementations"
+            UserRepoImpl[AdapterUserRepository]
+            AddressRepoImpl[AdapterUserAddressRepository]
+        end
+    end
+
+    subgraph "Presentation Layer"
+        subgraph "Controllers"
+            UserCtrl[UsersController<br/>- HTTP Endpoints<br/>- Request/Response]
+            AddrCtrl[UserAddressesController<br/>- Address CRUD<br/>- REST API]
+        end
+        
+        subgraph "Guards & Auth"
+            AuthGuard[Authentication Guard<br/>- Token Validation<br/>- User Context]
+            BearerGuard[Bearer Token Guard<br/>- Mock Auth<br/>- Development]
+        end
+    end
+
+    %% Relationships
+    User --> Email
+    User --> Password
+    User --> Gender
+    UserAddress --> Address
+    UserAddress --> Location
+    UserAddress --> User
+
+    RegUser --> CmdHandlers
+    UpdateUser --> CmdHandlers
+    AddAddr --> CmdHandlers
+    DelAddr --> CmdHandlers
+    
+    GetProfile --> QueryHandlers
+    GetAddresses --> QueryHandlers
+    
+    CmdHandlers --> UserRepo
+    CmdHandlers --> AddressRepo
+    QueryHandlers --> UserRepo
+    QueryHandlers --> AddressRepo
+    
+    UserRepo --> UserRepoImpl
+    AddressRepo --> AddressRepoImpl
+    
+    UserRepoImpl --> MockDB
+    UserRepoImpl --> PostgresDB
+    AddressRepoImpl --> MockDB
+    AddressRepoImpl --> PostgresDB
+    
+    UserCtrl --> CmdHandlers
+    UserCtrl --> QueryHandlers
+    AddrCtrl --> CmdHandlers
+    AddrCtrl --> QueryHandlers
+    
+    UserCtrl --> AuthGuard
+    AddrCtrl --> BearerGuard
+
+    classDef entityClass fill:#e1f5fe,stroke:#01579b,stroke-width:2px
+    classDef voClass fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
+    classDef repoClass fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px
+    classDef appClass fill:#fff3e0,stroke:#e65100,stroke-width:2px
+    classDef infraClass fill:#fce4ec,stroke:#880e4f,stroke-width:2px
+    classDef presClass fill:#f1f8e9,stroke:#33691e,stroke-width:2px
+
+    class User,UserAddress entityClass
+    class Email,Password,Address,Location,Gender voClass
+    class UserRepo,AddressRepo repoClass
+    class RegUser,UpdateUser,AddAddr,DelAddr,GetProfile,GetAddresses,CmdHandlers,QueryHandlers appClass
+    class MockDB,PostgresDB,UserRepoImpl,AddressRepoImpl infraClass
+    class UserCtrl,AddrCtrl,AuthGuard,BearerGuard presClass
+```
+
+### **Business Rules**
+
+- **User-Address Relationship**: One user can have multiple addresses (1:N)
+- **Default Address**: Each user must have exactly one default address
+- **Address Limit**: Maximum 10 addresses per user (configurable)
+- **Address Types**: Categorized for different use cases (Home, Work, Billing, Shipping, Other)
+- **Geolocation**: Optional GPS coordinates for precise delivery
+- **Soft Deletion**: Entities are marked as deleted, not physically removed
+- **Email Uniqueness**: One email per user across the system
+- **Age Validation**: Users must be 13+ years old (calculated from dateOfBirth)
+
 ## 🚀 **Features**
 
 ### **User Management**
