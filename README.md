@@ -257,6 +257,127 @@ Current implementation uses **Bearer Token Authentication** with mock tokens:
 
 ---
 
+## 👥 **Contributing**
+
+### **Commit Convention**
+
+This project follows [Conventional Commits v1.0.0-beta.4](https://www.conventionalcommits.org/en/v1.0.0-beta.4/) for consistent and semantic commit messages.
+
+#### **Commit Message Format**
+
+```
+<type>[optional scope]: <description>
+
+[optional body]
+
+[optional footer(s)]
+```
+
+#### **Types**
+
+- **feat**: A new feature for the user
+- **fix**: A bug fix for the user
+- **docs**: Changes to documentation
+- **style**: Formatting, missing semi colons, etc; no code change
+- **refactor**: Refactoring production code
+- **test**: Adding tests, refactoring test; no production code change
+- **chore**: Updating build tasks, package manager configs, etc; no production code change
+- **perf**: Performance improvements
+- **ci**: Changes to CI configuration files and scripts
+- **build**: Changes that affect the build system or external dependencies
+
+#### **Examples**
+
+```bash
+# New feature
+feat(users): add multi-address support with geolocation
+
+# Bug fix
+fix(auth): resolve token validation issue in bearer guard
+
+# Documentation
+docs: update API documentation with new endpoints
+
+# Refactoring
+refactor(users): extract address validation into separate service
+
+# Performance improvement
+perf(database): optimize user query with proper indexing
+
+# Breaking change
+feat(api)!: change user registration endpoint structure
+
+BREAKING CHANGE: The user registration endpoint now requires 
+an initial address object in the request body.
+```
+
+#### **Scope Guidelines**
+
+Common scopes for this project:
+- **users**: User management features
+- **auth**: Authentication and authorization
+- **api**: API-related changes
+- **database**: Database and persistence layer
+- **validation**: Input validation and business rules
+- **docs**: Documentation updates
+- **tests**: Test-related changes
+
+#### **Commit Best Practices**
+
+1. **Use imperative mood**: "add feature" not "added feature"
+2. **Keep subject line under 50 characters**
+3. **Capitalize first letter of description**
+4. **No period at the end of subject line**
+5. **Use body to explain what and why, not how**
+6. **Reference issues/PRs in footer**: `Closes #123`
+
+#### **Breaking Changes**
+
+For breaking changes, add `!` after the type/scope and include `BREAKING CHANGE:` in the footer:
+
+```bash
+feat(api)!: redesign user profile response structure
+
+BREAKING CHANGE: User profile endpoint now returns addresses 
+as a separate array instead of a single address object.
+```
+
+#### **Multi-line Example**
+
+```bash
+feat(users): implement comprehensive address management system
+
+- Add support for multiple addresses per user
+- Include geolocation with GPS coordinates for delivery
+- Add address types: HOME, WORK, BILLING, SHIPPING, OTHER
+- Implement business rule: exactly one default address
+- Add distance calculation using Haversine formula
+- Include delivery instructions for riders
+
+Closes #15, #23
+Refs #18
+```
+
+### **Development Workflow**
+
+1. **Create feature branch**: `git checkout -b feat/your-feature-name`
+2. **Make changes**: Follow coding standards and write tests
+3. **Commit changes**: Use conventional commit format
+4. **Push branch**: `git push origin feat/your-feature-name`
+5. **Create Pull Request**: Include description and testing notes
+6. **Code Review**: Address feedback and make updates
+7. **Merge**: Squash commits if multiple commits for single feature
+
+### **Code Standards**
+
+- **TypeScript**: Strict mode enabled with comprehensive typing
+- **ESLint**: Enforced code style and best practices
+- **Prettier**: Consistent code formatting
+- **Testing**: Maintain test coverage above 80%
+- **Documentation**: Update relevant docs with changes
+
+---
+
 ## 📝 **Development Notes**
 
 This project demonstrates modern backend development practices suitable for enterprise e-commerce applications. The architecture is designed for scalability, maintainability, and testability.
