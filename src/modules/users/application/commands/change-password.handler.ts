@@ -9,7 +9,7 @@ export class ChangePasswordCommandHandler
 {
   constructor(
     @Inject('UserRepository')
-    private readonly userRepository: UserRepository
+    private readonly userRepository: UserRepository,
   ) {}
 
   async execute(command: ChangePasswordCommand): Promise<void> {

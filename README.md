@@ -327,7 +327,6 @@ PUT    /v1/users/addresses/:id/default # Set as default address
    # Application
    NODE_ENV=development
    PORT=8091
-   API_PREFIX=v1
    
    # Database (choose one)
    DATABASE_TYPE=mock        # For development (default)
@@ -375,7 +374,6 @@ The application uses environment-based configuration with validation:
 |----------|----------|---------|-------------|
 | **App** | `NODE_ENV` | `development` | Application environment |
 | **App** | `PORT` | `8091` | Server port |
-| **App** | `API_PREFIX` | `v1` | API version prefix |
 | **Database** | `DATABASE_TYPE` | `mock` | Database adapter type |
 | **Database** | `DB_HOST` | `localhost` | PostgreSQL host |
 | **Database** | `DB_PORT` | `5432` | PostgreSQL port |

@@ -12,7 +12,7 @@ import { DatabaseAdapter } from '../adapters/database.adapter';
 export class AdapterUserRepository implements UserRepository {
   constructor(
     @Inject('DatabaseAdapter')
-    private readonly databaseAdapter: DatabaseAdapter
+    private readonly databaseAdapter: DatabaseAdapter,
   ) {}
 
   async save(user: User): Promise<void> {

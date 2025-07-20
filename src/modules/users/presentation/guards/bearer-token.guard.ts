@@ -37,7 +37,9 @@ export class BearerTokenGuard implements CanActivate {
     return true;
   }
 
-  private extractTokenFromHeader(request: AuthenticatedRequest): string | undefined {
+  private extractTokenFromHeader(
+    request: AuthenticatedRequest,
+  ): string | undefined {
     const authorization = request.headers.authorization;
     if (!authorization) {
       return undefined;

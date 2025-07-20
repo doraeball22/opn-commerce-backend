@@ -10,7 +10,7 @@ export class GetUserProfileQueryHandler
 {
   constructor(
     @Inject('UserRepository')
-    private readonly userRepository: UserRepository
+    private readonly userRepository: UserRepository,
   ) {}
 
   async execute(query: GetUserProfileQuery): Promise<UserProfileDto> {

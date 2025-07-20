@@ -10,7 +10,7 @@ export class UpdateUserCommandHandler
 {
   constructor(
     @Inject('UserRepository')
-    private readonly userRepository: UserRepository
+    private readonly userRepository: UserRepository,
   ) {}
 
   async execute(command: UpdateUserCommand): Promise<void> {

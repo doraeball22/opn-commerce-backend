@@ -5,7 +5,7 @@ import { UserAddressRepository } from '../../domain/repositories/user-address.re
 export class AddressValidationService {
   constructor(
     @Inject('UserAddressRepository')
-    private readonly userAddressRepository: UserAddressRepository
+    private readonly userAddressRepository: UserAddressRepository,
   ) {}
 
   async validateDefaultAddressConstraints(

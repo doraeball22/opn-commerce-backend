@@ -26,9 +26,6 @@ async function bootstrap() {
     defaultVersion: '1',
   });
 
-  // Global prefix for all routes
-  app.setGlobalPrefix(appConfig.apiPrefix);
-
   // Swagger configuration (only if enabled)
   if (appConfig.apiDocs.enabled) {
     const config = new DocumentBuilder()
@@ -60,14 +57,19 @@ async function bootstrap() {
     });
   }
 
-  await app.listen(appConfig.port);
-  console.log(`🚀 Application is running on: http://localhost:${appConfig.port}`);
-  
+  // Bind to all interfaces (0.0.0.0) for Docker containers, localhost for development
+  const host = process.env.NODE_ENV === 'production' ? '0.0.0.0' : 'localhost';
+  await app.listen(appConfig.port, host);
+  console.log(`🚀 Application is running on: http://${host}:${appConfig.port}`);
+
   if (appConfig.apiDocs.enabled) {
-    console.log(`📚 Swagger documentation: http://localhost:${appConfig.port}/${appConfig.apiDocs.path}`);
+    console.log(
+      `📚 Swagger documentation: http://localhost:${appConfig.port}/${appConfig.apiDocs.path}`,
+    );
   }
-  
-  console.log(`🔗 API ${appConfig.apiPrefix} endpoints: http://localhost:${appConfig.port}/${appConfig.apiPrefix}/`);
+
+  console.log(`🔗 API endpoints: http://localhost:${appConfig.port}/v1`);
+
   console.log(`🌍 Environment: ${appConfig.nodeEnv}`);
 }
 bootstrap();

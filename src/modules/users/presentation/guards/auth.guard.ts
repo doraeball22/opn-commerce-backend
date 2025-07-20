@@ -11,7 +11,7 @@ import { UserRepository } from '../../domain/repositories/user.repository';
 export class AuthGuard implements CanActivate {
   constructor(
     @Inject('UserRepository')
-    private readonly userRepository: UserRepository
+    private readonly userRepository: UserRepository,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -30,8 +30,8 @@ export class AuthGuard implements CanActivate {
 
     // Mock token validation - replace with real JWT validation
     const tokenUserMap: Record<string, string> = {
-      'faketoken_user1': 'user1',
-      'faketoken_user2': 'user2',
+      faketoken_user1: 'user1',
+      faketoken_user2: 'user2',
       'mock-valid-token': 'user1', // For compatibility with BearerTokenGuard
     };
 

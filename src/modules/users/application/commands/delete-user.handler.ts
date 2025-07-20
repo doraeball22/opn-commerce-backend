@@ -9,7 +9,7 @@ export class DeleteUserCommandHandler
 {
   constructor(
     @Inject('UserRepository')
-    private readonly userRepository: UserRepository
+    private readonly userRepository: UserRepository,
   ) {}
 
   async execute(command: DeleteUserCommand): Promise<void> {

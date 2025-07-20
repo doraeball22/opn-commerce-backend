@@ -12,7 +12,7 @@ import { DatabaseAdapter } from '../adapters/database.adapter';
 export class AdapterUserAddressRepository implements UserAddressRepository {
   constructor(
     @Inject('DatabaseAdapter')
-    private readonly databaseAdapter: DatabaseAdapter
+    private readonly databaseAdapter: DatabaseAdapter,
   ) {}
 
   async save(userAddress: UserAddress): Promise<UserAddress> {

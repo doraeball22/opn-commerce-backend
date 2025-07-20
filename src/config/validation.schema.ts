@@ -6,12 +6,9 @@ export const configValidationSchema = Joi.object({
     .valid('development', 'production', 'test')
     .default('development'),
   PORT: Joi.number().port().default(8091),
-  API_PREFIX: Joi.string().default('v1'),
 
   // Database Configuration
-  DATABASE_TYPE: Joi.string()
-    .valid('mock', 'postgresql')
-    .default('mock'),
+  DATABASE_TYPE: Joi.string().valid('mock', 'postgresql').default('mock'),
 
   // PostgreSQL Configuration
   DB_HOST: Joi.string().default('localhost'),
