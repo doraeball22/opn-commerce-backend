@@ -1,6 +1,5 @@
 import { Module } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
-import { ConfigModule } from '@nestjs/config';
 import { UsersController } from './presentation/controllers/users.controller';
 import { UserAddressesController } from './presentation/controllers/user-addresses.controller';
 import { AuthGuard } from './presentation/guards/auth.guard';
@@ -23,10 +22,9 @@ import { DeleteUserAddressHandler } from './application/handlers/delete-user-add
 import { SetDefaultAddressHandler } from './application/handlers/set-default-address.handler';
 import { GetUserAddressesHandler } from './application/handlers/get-user-addresses.handler';
 import { AddressValidationService } from './application/validators/address-validation.service';
-import databaseConfig from './infrastructure/config/database.config';
 
 @Module({
-  imports: [CqrsModule, ConfigModule.forFeature(databaseConfig)],
+  imports: [CqrsModule],
   controllers: [UsersController, UserAddressesController],
   providers: [
     // Database Adapters

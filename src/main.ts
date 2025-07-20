@@ -1,10 +1,24 @@
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { VersioningType } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { AppModule } from './app.module';
+import type { AppConfig } from './config';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  const configService = app.get(ConfigService);
+  const appConfig = configService.get<AppConfig>('app')!;
+
+  // Enable CORS if configured
+  if (appConfig.corsEnabled) {
+    app.enableCors({
+      origin: appConfig.corsOrigins,
+      methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+      allowedHeaders: ['Content-Type', 'Authorization'],
+      credentials: true,
+    });
+  }
 
   // Enable versioning
   app.enableVersioning({
@@ -12,38 +26,48 @@ async function bootstrap() {
     defaultVersion: '1',
   });
 
-  // Swagger configuration
-  const config = new DocumentBuilder()
-    .setTitle('OPN Commerce Backend')
-    .setDescription(
-      'RESTful API for user management - Opn.Pro Engineering Challenge',
-    )
-    .setVersion('1.0')
-    .addBearerAuth(
-      {
-        type: 'http',
-        scheme: 'bearer',
-        bearerFormat: 'JWT',
-        name: 'JWT',
-        description: 'Enter mock JWT token (e.g., faketoken_user1)',
-        in: 'header',
+  // Global prefix for all routes
+  app.setGlobalPrefix(appConfig.apiPrefix);
+
+  // Swagger configuration (only if enabled)
+  if (appConfig.apiDocs.enabled) {
+    const config = new DocumentBuilder()
+      .setTitle('OPN Commerce Backend')
+      .setDescription(
+        'RESTful API for user management - Opn.Pro Engineering Challenge',
+      )
+      .setVersion('1.0')
+      .addBearerAuth(
+        {
+          type: 'http',
+          scheme: 'bearer',
+          bearerFormat: 'JWT',
+          name: 'JWT',
+          description: 'Enter mock JWT token (e.g., faketoken_user1)',
+          in: 'header',
+        },
+        'JWT-auth',
+      )
+      .addTag('Users', 'User management endpoints')
+      .addTag('Address', 'User address management endpoints')
+      .build();
+
+    const document = SwaggerModule.createDocument(app, config);
+    SwaggerModule.setup(appConfig.apiDocs.path, app, document, {
+      swaggerOptions: {
+        persistAuthorization: true,
       },
-      'JWT-auth',
-    )
-    .addTag('Users', 'User management endpoints')
-    .build();
+    });
+  }
 
-  const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api', app, document, {
-    swaggerOptions: {
-      persistAuthorization: true,
-    },
-  });
-
-  const port = process.env.PORT ?? 8091;
-  await app.listen(port);
-  console.log(`Application is running on: http://localhost:${port}`);
-  console.log(`Swagger documentation: http://localhost:${port}/api`);
-  console.log(`API v1 endpoints: http://localhost:${port}/v1/`);
+  await app.listen(appConfig.port);
+  console.log(`🚀 Application is running on: http://localhost:${appConfig.port}`);
+  
+  if (appConfig.apiDocs.enabled) {
+    console.log(`📚 Swagger documentation: http://localhost:${appConfig.port}/${appConfig.apiDocs.path}`);
+  }
+  
+  console.log(`🔗 API ${appConfig.apiPrefix} endpoints: http://localhost:${appConfig.port}/${appConfig.apiPrefix}/`);
+  console.log(`🌍 Environment: ${appConfig.nodeEnv}`);
 }
 bootstrap();

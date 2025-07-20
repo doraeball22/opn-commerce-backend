@@ -313,18 +313,43 @@ PUT    /v1/users/addresses/:id/default # Set as default address
    npm install
    ```
 
-2. **Configure database (optional)**
+2. **Environment Configuration**
    ```bash
-   # Use mock database (default)
-   export DATABASE_TYPE=mock
+   # Copy environment template
+   cp .env.example .env
    
-   # Or use PostgreSQL (requires setup)
-   export DATABASE_TYPE=postgresql
-   export DB_HOST=localhost
-   export DB_PORT=5432
-   export DB_USERNAME=postgres
-   export DB_PASSWORD=password
-   export DB_NAME=opn_commerce
+   # Edit .env file with your configuration
+   nano .env
+   ```
+
+   **Key configuration options:**
+   ```bash
+   # Application
+   NODE_ENV=development
+   PORT=8091
+   API_PREFIX=v1
+   
+   # Database (choose one)
+   DATABASE_TYPE=mock        # For development (default)
+   # DATABASE_TYPE=postgresql # For production
+   
+   # PostgreSQL (if using DATABASE_TYPE=postgresql)
+   DB_HOST=localhost
+   DB_PORT=5432
+   DB_USERNAME=postgres
+   DB_PASSWORD=your-password
+   DB_NAME=opn_commerce
+   
+   # Security
+   JWT_SECRET=your-secret-key-change-in-production
+   
+   # API Documentation
+   API_DOCS_ENABLED=true
+   API_DOCS_PATH=api
+   
+   # CORS
+   CORS_ENABLED=true
+   CORS_ORIGINS=http://localhost:3000,http://localhost:3001
    ```
 
 3. **Start development server**
@@ -334,7 +359,37 @@ PUT    /v1/users/addresses/:id/default # Set as default address
 
 4. **Access the application**
    - API Server: http://localhost:8091
+   - API Endpoints: http://localhost:8091/v1/
    - Swagger Documentation: http://localhost:8091/api
+
+### **Configuration Details**
+
+#### **Database Options**
+- **Mock Database** (`DATABASE_TYPE=mock`): In-memory storage, perfect for development
+- **PostgreSQL** (`DATABASE_TYPE=postgresql`): Production-ready database with persistence
+
+#### **Environment Variables**
+The application uses environment-based configuration with validation:
+
+| Category | Variable | Default | Description |
+|----------|----------|---------|-------------|
+| **App** | `NODE_ENV` | `development` | Application environment |
+| **App** | `PORT` | `8091` | Server port |
+| **App** | `API_PREFIX` | `v1` | API version prefix |
+| **Database** | `DATABASE_TYPE` | `mock` | Database adapter type |
+| **Database** | `DB_HOST` | `localhost` | PostgreSQL host |
+| **Database** | `DB_PORT` | `5432` | PostgreSQL port |
+| **Database** | `DB_USERNAME` | `postgres` | PostgreSQL username |
+| **Database** | `DB_PASSWORD` | `password` | PostgreSQL password |
+| **Database** | `DB_NAME` | `opn_commerce` | PostgreSQL database name |
+| **Security** | `JWT_SECRET` | `change-me...` | JWT secret key |
+| **Security** | `BCRYPT_ROUNDS` | `12` | Password hashing rounds |
+| **API** | `API_DOCS_ENABLED` | `true` | Enable Swagger documentation |
+| **API** | `CORS_ENABLED` | `true` | Enable CORS |
+| **Logging** | `LOG_LEVEL` | `debug` | Application log level |
+
+#### **Configuration Validation**
+The application validates all environment variables on startup using Joi schema validation. Invalid configurations will prevent the application from starting with clear error messages.
 
 ### **Testing**
 

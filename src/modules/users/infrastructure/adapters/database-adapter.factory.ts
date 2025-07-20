@@ -54,7 +54,7 @@ export class DatabaseAdapterFactory {
    */
   private getDatabaseType(): DatabaseType {
     const configValue = this.configService.get<string>(
-      'DATABASE_TYPE',
+      'database.type',
       DatabaseType.MOCK,
     );
 
@@ -126,7 +126,7 @@ export class DatabaseAdapterFactory {
    * Gets recommended database type based on environment.
    */
   getRecommendedType(): DatabaseType {
-    const nodeEnv = this.configService.get<string>('NODE_ENV', 'development');
+    const nodeEnv = this.configService.get<string>('app.nodeEnv', 'development');
 
     switch (nodeEnv) {
       case 'production':

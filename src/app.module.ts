@@ -1,13 +1,29 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
 import { APP_FILTER, APP_PIPE } from '@nestjs/core';
 import { ValidationPipe, BadRequestException } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UsersModule } from './modules/users/users.module';
 import { AllExceptionsFilter } from './shared/exceptions/all-exceptions.filter';
+import { appConfig, databaseConfig, configValidationSchema } from './config';
 
 @Module({
-  imports: [UsersModule],
+  imports: [
+    // Global configuration module
+    ConfigModule.forRoot({
+      isGlobal: true,
+      load: [appConfig, databaseConfig],
+      validationSchema: configValidationSchema,
+      validationOptions: {
+        allowUnknown: true,
+        abortEarly: false,
+      },
+      envFilePath: ['.env.local', '.env'],
+      cache: true,
+    }),
+    UsersModule,
+  ],
   controllers: [AppController],
   providers: [
     AppService,
