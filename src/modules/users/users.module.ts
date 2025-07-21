@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
+import { TypeOrmModule } from '@nestjs/typeorm';
 import { UsersController } from './presentation/controllers/users.controller';
 import { UserAddressesController } from './presentation/controllers/user-addresses.controller';
 import { AuthGuard } from './presentation/guards/auth.guard';
@@ -11,7 +12,7 @@ import { AdapterUserAddressRepository } from './infrastructure/repositories/adap
 import { DatabaseAdapter } from './infrastructure/adapters/database.adapter';
 import { MockDatabaseAdapter } from './infrastructure/adapters/mock-database.adapter';
 import { PostgreSQLDatabaseAdapter } from './infrastructure/adapters/postgresql-database.adapter';
-import { DatabaseAdapterFactory } from './infrastructure/adapters/database-adapter.factory';
+import { DatabaseAdapterFactory, PostgreSQLDatabaseAdapterFactory } from './infrastructure/adapters/database-adapter.factory';
 import { CommandHandlers } from './application/commands';
 import { QueryHandlers } from './application/queries';
 import { UseCases } from './application/use-cases';
@@ -22,28 +23,50 @@ import { DeleteUserAddressHandler } from './application/handlers/delete-user-add
 import { SetDefaultAddressHandler } from './application/handlers/set-default-address.handler';
 import { GetUserAddressesHandler } from './application/handlers/get-user-addresses.handler';
 import { AddressValidationService } from './application/validators/address-validation.service';
+import {
+  UserEntity,
+  UserAddressEntity,
+} from './infrastructure/persistence/entities';
 
 @Module({
-  imports: [CqrsModule],
+  imports: [
+    CqrsModule,
+    ...(process.env.DATABASE_TYPE === 'postgresql' 
+      ? [TypeOrmModule.forFeature([UserEntity, UserAddressEntity])]
+      : []),
+  ],
   controllers: [UsersController, UserAddressesController],
   providers: [
     // Database Adapters
     MockDatabaseAdapter,
-    PostgreSQLDatabaseAdapter,
+    ...(process.env.DATABASE_TYPE === 'postgresql' 
+      ? [PostgreSQLDatabaseAdapter, PostgreSQLDatabaseAdapterFactory]
+      : []),
     DatabaseAdapterFactory,
 
     // Database Adapter Provider
     {
       provide: 'DatabaseAdapter',
-      useFactory: (factory: DatabaseAdapterFactory) => {
-        const adapter = factory.createAdapter();
+      useFactory: (
+        mockFactory: DatabaseAdapterFactory, 
+        postgresFactory?: PostgreSQLDatabaseAdapterFactory
+      ) => {
+        const databaseType = process.env.DATABASE_TYPE || 'mock';
+        let adapter: DatabaseAdapter;
+        
+        if (databaseType === 'postgresql' && postgresFactory) {
+          adapter = postgresFactory.createAdapter();
+        } else {
+          adapter = mockFactory.createAdapter();
+        }
+        
         // Initialize connection if supported
         if (adapter.connect) {
           adapter.connect().catch(console.error);
         }
         return adapter;
       },
-      inject: [DatabaseAdapterFactory],
+      inject: [DatabaseAdapterFactory, ...(process.env.DATABASE_TYPE === 'postgresql' ? [PostgreSQLDatabaseAdapterFactory] : [])],
     },
 
     // Repository Implementations using Adapter Pattern

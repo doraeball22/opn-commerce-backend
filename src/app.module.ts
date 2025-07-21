@@ -1,12 +1,19 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_FILTER, APP_PIPE } from '@nestjs/core';
 import { ValidationPipe, BadRequestException } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UsersModule } from './modules/users/users.module';
+import { DatabaseModule } from './modules/database/database.module';
 import { AllExceptionsFilter } from './shared/exceptions/all-exceptions.filter';
 import { appConfig, databaseConfig, configValidationSchema } from './config';
+
+// Conditionally import database module based on configuration
+const getDatabaseModule = () => {
+  const databaseType = process.env.DATABASE_TYPE || 'mock';
+  return databaseType === 'postgresql' ? DatabaseModule.forRoot() : DatabaseModule.forMock();
+};
 
 @Module({
   imports: [
@@ -22,6 +29,7 @@ import { appConfig, databaseConfig, configValidationSchema } from './config';
       envFilePath: ['.env.local', '.env'],
       cache: true,
     }),
+    getDatabaseModule(),
     UsersModule,
   ],
   controllers: [AppController],
