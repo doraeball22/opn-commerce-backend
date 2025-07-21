@@ -203,6 +203,7 @@ DELETE /v1/users/addresses/:id         # Delete address (requires auth)
 3. **Access the application**
    - API Server: http://localhost:8091
    - Swagger Documentation: http://localhost:8091/api
+   - **Live Demo**: http://opn-commerce-prod.eba-ezypbcyr.ap-southeast-1.elasticbeanstalk.com/api
    
    > **Note**: The `.env.example` is pre-configured to work immediately with mock data. No additional setup required!
 
