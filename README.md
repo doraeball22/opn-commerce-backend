@@ -2,6 +2,28 @@
 
 A modern e-commerce backend built with **NestJS**, implementing **Domain-Driven Design (DDD)**, **Onion Architecture**, and **CQRS** patterns.
 
+## 📝 **Challenge Assignments & Solutions**
+
+This repository contains solutions for the OPN.Pro Engineering Challenge. See [**Assignment Details**](docs/ASSIGNMENTS.md) for the complete requirements.
+
+### **Assignment Solutions:**
+
+1. **Exercise 1: RESTful API** ✅ 
+   - **Solution**: [User Module Documentation](src/modules/users/README.md)
+   - Implemented complete user management system with DDD, CQRS, and JWT authentication
+
+2. **Exercise 2: Database Design** ✅
+   - **Solution**: [Database Design Document](docs/EXERCISE-2.md)
+   - Designed scalable database schema for e-commerce platform
+
+3. **Exercise 3: OOP - Cart Service** ✅
+   - **Solution**: [Cart Module Documentation](src/modules/cart/README.md)
+   - Built comprehensive cart system with discounts and freebies using OOP principles
+
+4. **Exercise 4: Solution Architecture** ✅
+   - **Solution**: [Architecture Design Document](docs/EXERCISE-4.md)
+   - Designed microservices architecture for Instagram-like MVP
+
 ## 🏗️ **Architecture Overview**
 
 This project follows enterprise-grade architectural patterns:
@@ -31,267 +53,121 @@ This project follows enterprise-grade architectural patterns:
 
 ```
 src/
+├── shared/                            # Shared cross-cutting concerns
+│   ├── auth/                          # JWT authentication system
+│   ├── database/                      # Database adapters & interfaces
+│   ├── exceptions/                    # Global error handling
+│   └── types/                         # Shared TypeScript types
 ├── modules/
-│   └── users/                          # User domain module
-│       ├── domain/                     # Core business logic
-│       │   ├── entities/               # Domain entities
-│       │   │   ├── user.entity.ts      # User aggregate root
-│       │   │   └── user-address.entity.ts  # User address entity
-│       │   ├── value-objects/          # Immutable value objects
-│       │   │   ├── email.vo.ts         # Email validation & normalization
-│       │   │   ├── password.vo.ts      # Password hashing
-│       │   │   ├── address.vo.ts       # Physical address
-│       │   │   ├── location.vo.ts      # GPS coordinates for delivery
-│       │   │   └── gender.vo.ts        # Gender enumeration
-│       │   └── repositories/           # Repository interfaces
-│       ├── application/                # Application services & use cases
-│       │   ├── commands/               # Write operations (CQRS)
-│       │   ├── queries/                # Read operations (CQRS)
-│       │   ├── handlers/               # Command/Query handlers
-│       │   ├── use-cases/              # Business use cases
-│       │   ├── dto/                    # Data transfer objects
-│       │   └── validators/             # Business validation services
-│       ├── infrastructure/             # External concerns
-│       │   ├── persistence/            # Data persistence (in-memory for now)
-│       │   └── repositories/           # Repository implementations
-│       └── presentation/               # API controllers & guards
-│           ├── controllers/            # REST endpoints
-│           ├── guards/                 # Authentication & authorization
-│           └── decorators/             # Custom decorators
+│   ├── users/                         # User management & authentication
+│   ├── products/                      # Product catalog & inventory
+│   └── cart/                          # Shopping cart & discounts
 └── main.ts                            # Application bootstrap
 ```
 
-### **Entity Relationship Diagram**
+### **Standard Module Structure**
 
-```mermaid
-erDiagram
-    User ||--o{ UserAddress : has
-    UserAddress ||--|| Address : contains
-    UserAddress ||--o| Location : "may have"
-    User ||--|| Email : has
-    User ||--|| Password : has
-    User ||--|| Gender : has
+Each module follows DDD and CQRS patterns with this consistent structure:
 
-    User {
-        string id PK
-        Email email UK "Unique email address"
-        Password password "Hashed password"
-        string name "Full name"
-        Date dateOfBirth "Date of birth"
-        Gender gender "MALE|FEMALE|OTHER"
-        boolean subscribedToNewsletter "Newsletter subscription"
-        Date createdAt "Creation timestamp"
-        Date updatedAt "Last update timestamp"
-        boolean isDeleted "Soft deletion flag"
-    }
-
-    UserAddress {
-        string id PK
-        string userId FK "References User.id"
-        Address address "Physical address details"
-        AddressType type "HOME|WORK|BILLING|SHIPPING|OTHER"
-        string label "User-defined label"
-        boolean isDefault "Default address flag"
-        Location location "Optional GPS coordinates"
-        string deliveryInstructions "Optional delivery notes"
-        Date createdAt "Creation timestamp"
-        Date updatedAt "Last update timestamp"
-        boolean isDeleted "Soft deletion flag"
-    }
-
-    Address {
-        string street "Street address"
-        string city "City name"
-        string state "State/Province"
-        string postalCode "Postal/ZIP code"
-        string country "Country name"
-    }
-
-    Location {
-        number latitude "GPS latitude (-90 to 90)"
-        number longitude "GPS longitude (-180 to 180)"
-    }
-
-    Email {
-        string value "Normalized email address"
-    }
-
-    Password {
-        string hashedValue "Bcrypt hashed password"
-    }
-
-    Gender {
-        string value "MALE|FEMALE|OTHER"
-    }
+```
+src/modules/{module-name}/
+├── domain/                            # Core business logic (Domain Layer)
+│   ├── entities/                      # Domain entities & aggregates
+│   │   ├── {entity}.entity.ts        # Aggregate roots
+│   │   └── {sub-entity}.entity.ts    # Child entities
+│   ├── value-objects/                 # Immutable value objects
+│   │   ├── {concept}.vo.ts           # Business concepts
+│   │   └── {rule}.vo.ts              # Business rules
+│   ├── repositories/                  # Repository interfaces
+│   │   └── {entity}.repository.ts    # Abstract data access
+│   └── services/                      # Domain services
+│       └── {business}.service.ts     # Complex business logic
+├── application/                       # Use cases & orchestration (Application Layer)
+│   ├── commands/                      # Write operations (CQRS)
+│   │   ├── {action}.command.ts       # Command definitions
+│   │   └── {action}.handler.ts       # Command handlers
+│   ├── queries/                       # Read operations (CQRS)
+│   │   ├── {fetch}.query.ts          # Query definitions
+│   │   └── {fetch}.handler.ts        # Query handlers
+│   ├── use-cases/                     # Business use cases
+│   │   └── {feature}.use-case.ts     # Use case orchestration
+│   ├── dto/                           # Data transfer objects
+│   │   ├── {input}.dto.ts            # Request validation
+│   │   └── {output}.dto.ts           # Response formatting
+│   └── services/                      # Application services
+│       └── {module}.service.ts       # Service facade
+├── infrastructure/                    # External dependencies (Infrastructure Layer)
+│   ├── persistence/                   # Data persistence
+│   │   └── {adapter}.repository.ts   # Repository implementations
+│   ├── adapters/                      # External service adapters
+│   │   └── {service}.adapter.ts      # Third-party integrations
+│   └── mappers/                       # Data mappers
+│       └── {entity}.mapper.ts        # Domain-DB mapping
+└── presentation/                      # HTTP interface (Presentation Layer)
+    ├── controllers/                   # REST controllers
+    │   └── {module}.controller.ts     # API endpoints
+    ├── guards/                        # Security guards
+    │   └── {permission}.guard.ts      # Access control
+    └── decorators/                    # Custom decorators
+        └── {feature}.decorator.ts     # Request enhancements
 ```
 
-### **Domain Model Architecture**
+## 📚 **Module Documentation**
 
-```mermaid
-graph TB
-    subgraph "Domain Layer"
-        subgraph "Entities (Aggregate Roots)"
-            User[User Entity<br/>- Business Logic<br/>- Invariants<br/>- Lifecycle Management]
-            UserAddress[UserAddress Entity<br/>- Address Management<br/>- Default Logic<br/>- Validation Rules]
-        end
-        
-        subgraph "Value Objects"
-            Email[Email VO<br/>- Validation<br/>- Normalization]
-            Password[Password VO<br/>- Hashing<br/>- Strength Validation]
-            Address[Address VO<br/>- Format Validation<br/>- Immutable]
-            Location[Location VO<br/>- GPS Validation<br/>- Distance Calc]
-            Gender[Gender VO<br/>- Enum Validation]
-        end
-        
-        subgraph "Repository Interfaces"
-            UserRepo[UserRepository<br/>Interface]
-            AddressRepo[UserAddressRepository<br/>Interface]
-        end
-    end
+### **Domain Modules**
+Each module contains detailed documentation with architecture diagrams, business rules, and implementation details:
 
-    subgraph "Application Layer"
-        subgraph "Commands (Write)"
-            RegUser[RegisterUserCommand]
-            UpdateUser[UpdateUserCommand]
-            AddAddr[AddUserAddressCommand]
-            DelAddr[DeleteUserAddressCommand]
-        end
-        
-        subgraph "Queries (Read)"
-            GetProfile[GetUserProfileQuery]
-            GetAddresses[GetUserAddressesQuery]
-        end
-        
-        subgraph "Handlers"
-            CmdHandlers[Command Handlers<br/>- Business Logic<br/>- Validation<br/>- Persistence]
-            QueryHandlers[Query Handlers<br/>- Data Retrieval<br/>- DTO Mapping]
-        end
-    end
+- **[User Module](src/modules/users/README.md)** - User management, authentication, multi-address support
+- **[Product Module](src/modules/products/README.md)** - Product catalog, inventory, categories
+- **[Cart Module](src/modules/cart/README.md)** - Shopping cart, discounts, freebies
 
-    subgraph "Infrastructure Layer"
-        subgraph "Database Adapters"
-            MockDB[Mock Database Adapter<br/>- In-Memory Storage<br/>- Development/Testing]
-            PostgresDB[PostgreSQL Adapter<br/>- Production Database<br/>- Persistence]
-        end
-        
-        subgraph "Repository Implementations"
-            UserRepoImpl[AdapterUserRepository]
-            AddressRepoImpl[AdapterUserAddressRepository]
-        end
-    end
+### **Shared Modules**
+Core functionality shared across all domain modules:
 
-    subgraph "Presentation Layer"
-        subgraph "Controllers"
-            UserCtrl[UsersController<br/>- HTTP Endpoints<br/>- Request/Response]
-            AddrCtrl[UserAddressesController<br/>- Address CRUD<br/>- REST API]
-        end
-        
-        subgraph "Guards & Auth"
-            AuthGuard[Authentication Guard<br/>- Token Validation<br/>- User Context]
-            BearerGuard[Bearer Token Guard<br/>- Mock Auth<br/>- Development]
-        end
-    end
-
-    %% Relationships
-    User --> Email
-    User --> Password
-    User --> Gender
-    UserAddress --> Address
-    UserAddress --> Location
-    UserAddress --> User
-
-    RegUser --> CmdHandlers
-    UpdateUser --> CmdHandlers
-    AddAddr --> CmdHandlers
-    DelAddr --> CmdHandlers
-    
-    GetProfile --> QueryHandlers
-    GetAddresses --> QueryHandlers
-    
-    CmdHandlers --> UserRepo
-    CmdHandlers --> AddressRepo
-    QueryHandlers --> UserRepo
-    QueryHandlers --> AddressRepo
-    
-    UserRepo --> UserRepoImpl
-    AddressRepo --> AddressRepoImpl
-    
-    UserRepoImpl --> MockDB
-    UserRepoImpl --> PostgresDB
-    AddressRepoImpl --> MockDB
-    AddressRepoImpl --> PostgresDB
-    
-    UserCtrl --> CmdHandlers
-    UserCtrl --> QueryHandlers
-    AddrCtrl --> CmdHandlers
-    AddrCtrl --> QueryHandlers
-    
-    UserCtrl --> AuthGuard
-    AddrCtrl --> BearerGuard
-
-    classDef entityClass fill:#e1f5fe,stroke:#01579b,stroke-width:2px
-    classDef voClass fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
-    classDef repoClass fill:#e8f5e8,stroke:#1b5e20,stroke-width:2px
-    classDef appClass fill:#fff3e0,stroke:#e65100,stroke-width:2px
-    classDef infraClass fill:#fce4ec,stroke:#880e4f,stroke-width:2px
-    classDef presClass fill:#f1f8e9,stroke:#33691e,stroke-width:2px
-
-    class User,UserAddress entityClass
-    class Email,Password,Address,Location,Gender voClass
-    class UserRepo,AddressRepo repoClass
-    class RegUser,UpdateUser,AddAddr,DelAddr,GetProfile,GetAddresses,CmdHandlers,QueryHandlers appClass
-    class MockDB,PostgresDB,UserRepoImpl,AddressRepoImpl infraClass
-    class UserCtrl,AddrCtrl,AuthGuard,BearerGuard presClass
-```
-
-### **Business Rules**
-
-- **User-Address Relationship**: One user can have multiple addresses (1:N)
-- **Default Address**: Each user must have exactly one default address
-- **Address Limit**: Maximum 10 addresses per user (configurable)
-- **Address Types**: Categorized for different use cases (Home, Work, Billing, Shipping, Other)
-- **Geolocation**: Optional GPS coordinates for precise delivery
-- **Soft Deletion**: Entities are marked as deleted, not physically removed
-- **Email Uniqueness**: One email per user across the system
-- **Age Validation**: Users must be 13+ years old (calculated from dateOfBirth)
+- **Auth Module** - JWT-based authentication system with guards and decorators
+- **Database Module** - Adapter pattern for database abstraction (Mock/PostgreSQL)
+- **Exception Filters** - Global error handling with consistent error responses
+- **Common Types** - Shared TypeScript interfaces and types
 
 ## 🚀 **Features**
 
 ### **User Management**
 - ✅ User registration with comprehensive validation
-- ✅ Profile management (update personal information)
-- ✅ Password management with secure hashing
-- ✅ Soft deletion with business rule enforcement
-- ✅ Age calculation and validation (minimum 13 years)
+- ✅ JWT authentication with shared auth system
+- ✅ Multi-address support with geolocation
+- ✅ Profile management with business rules
 
-### **Address Management** 
-- ✅ **Multiple addresses per user** (Home, Work, Billing, Shipping, Other)
-- ✅ **Default address management** (exactly one default required)
-- ✅ **Geolocation support** with GPS coordinates for precise delivery
-- ✅ **Delivery instructions** for riders/drivers
-- ✅ **Address validation** with duplicate detection
-- ✅ **Distance calculation** using Haversine formula
-- ✅ **Regional validation** (Thailand boundaries)
+### **Product Management**
+- ✅ Product catalog with categories and specifications
+- ✅ Inventory tracking with stock management
+- ✅ Price management with currency support
+
+### **Cart Management**
+- ✅ Shopping cart with item management
+- ✅ Discount system (fixed & percentage)
+- ✅ Freebie rules and promotions
+- ✅ OOP-based design patterns
 
 ### **API Features**
-- ✅ **RESTful API** with proper HTTP status codes
-- ✅ **API Versioning** (v1) for backward compatibility
-- ✅ **OpenAPI/Swagger Documentation** at `/api`
-- ✅ **JWT Authentication** with token-based security
-- ✅ **Shared Authentication System** for all modules
-- ✅ **Enhanced Validation** with custom validators
-- ✅ **Error Handling** with detailed error messages
+- ✅ RESTful API with proper HTTP status codes
+- ✅ API Versioning (v1) for backward compatibility
+- ✅ OpenAPI/Swagger Documentation at `/api`
+- ✅ Enhanced validation with custom validators
+- ✅ Comprehensive error handling
 
-## 📋 **API Endpoints**
+## 📋 **Quick API Reference**
+
+### **Authentication**
+```
+POST   /v1/users/register              # Register new user
+POST   /v1/users/login                 # Login and get JWT token
+```
 
 ### **User Management**
 ```
-POST   /v1/users/register              # Register new user
-POST   /v1/users/login                 # Login user and get JWT token
 GET    /v1/users/profile               # Get user profile (requires auth)
 PUT    /v1/users/profile               # Update user profile (requires auth)
 DELETE /v1/users/profile               # Delete user account (requires auth)
-PUT    /v1/users/change-password       # Change password (requires auth)
 ```
 
 ### **Address Management**
@@ -300,7 +176,6 @@ GET    /v1/users/addresses             # Get user addresses (requires auth)
 POST   /v1/users/addresses             # Add new address (requires auth)
 PUT    /v1/users/addresses/:id         # Update address (requires auth)
 DELETE /v1/users/addresses/:id         # Delete address (requires auth)
-PUT    /v1/users/addresses/:id/default # Set as default address (requires auth)
 ```
 
 ## 🔧 **Getting Started**
@@ -309,88 +184,43 @@ PUT    /v1/users/addresses/:id/default # Set as default address (requires auth)
 - Node.js 22+ 
 - npm 10+
 
-### **Installation & Setup**
+### **Quick Start**
 
-1. **Install dependencies**
+1. **Clone and setup**
    ```bash
+   # Copy environment configuration
+   cp .env.example .env
+   
+   # Install dependencies
    npm install
    ```
 
-2. **Environment Configuration**
-   ```bash
-   # Copy environment template
-   cp .env.example .env
-   
-   # Edit .env file with your configuration
-   nano .env
-   ```
-
-   **Key configuration options:**
-   ```bash
-   # Application
-   NODE_ENV=development
-   PORT=8091
-   
-   # Database (choose one)
-   DATABASE_TYPE=mock        # For development (default)
-   # DATABASE_TYPE=postgresql # For production
-   
-   # PostgreSQL (if using DATABASE_TYPE=postgresql)
-   DB_HOST=localhost
-   DB_PORT=5432
-   DB_USERNAME=postgres
-   DB_PASSWORD=your-password
-   DB_NAME=opn_commerce
-   
-   # Security
-   JWT_SECRET=your-secret-key-change-in-production
-   
-   # API Documentation
-   API_DOCS_ENABLED=true
-   API_DOCS_PATH=api
-   
-   # CORS
-   CORS_ENABLED=true
-   CORS_ORIGINS=http://localhost:3000,http://localhost:3001
-   ```
-
-3. **Start development server**
+2. **Start development server**
    ```bash
    npm run start:dev
    ```
 
-4. **Access the application**
+3. **Access the application**
    - API Server: http://localhost:8091
-   - API Endpoints: http://localhost:8091/v1/
    - Swagger Documentation: http://localhost:8091/api
+   
+   > **Note**: The `.env.example` is pre-configured to work immediately with mock data. No additional setup required!
 
-### **Configuration Details**
+### **Configuration**
 
-#### **Database Options**
-- **Mock Database** (`DATABASE_TYPE=mock`): In-memory storage, perfect for development
-- **PostgreSQL** (`DATABASE_TYPE=postgresql`): Production-ready database with persistence
+The application uses environment variables for configuration. Copy `.env.example` to `.env` and configure:
 
-#### **Environment Variables**
-The application uses environment-based configuration with validation:
+```bash
+# Application
+PORT=8091
+DATABASE_TYPE=mock        # Use 'postgresql' for production
 
-| Category | Variable | Default | Description |
-|----------|----------|---------|-------------|
-| **App** | `NODE_ENV` | `development` | Application environment |
-| **App** | `PORT` | `8091` | Server port |
-| **Database** | `DATABASE_TYPE` | `mock` | Database adapter type |
-| **Database** | `DB_HOST` | `localhost` | PostgreSQL host |
-| **Database** | `DB_PORT` | `5432` | PostgreSQL port |
-| **Database** | `DB_USERNAME` | `postgres` | PostgreSQL username |
-| **Database** | `DB_PASSWORD` | `password` | PostgreSQL password |
-| **Database** | `DB_NAME` | `opn_commerce` | PostgreSQL database name |
-| **Security** | `JWT_SECRET` | `change-me...` | JWT secret key |
-| **Security** | `BCRYPT_ROUNDS` | `12` | Password hashing rounds |
-| **API** | `API_DOCS_ENABLED` | `true` | Enable Swagger documentation |
-| **API** | `CORS_ENABLED` | `true` | Enable CORS |
-| **Logging** | `LOG_LEVEL` | `debug` | Application log level |
+# Security (change in production)
+JWT_SECRET=your-secret-key-change-in-production
 
-#### **Configuration Validation**
-The application validates all environment variables on startup using Joi schema validation. Invalid configurations will prevent the application from starting with clear error messages.
+# API Documentation
+API_DOCS_ENABLED=true
+```
 
 ### **Testing**
 
@@ -405,234 +235,69 @@ npm run test:watch
 npm run test:cov
 ```
 
-## 📚 **Documentation**
-
-### **API Documentation**
-- Interactive Swagger UI available at `/api`
-- Complete endpoint documentation with examples
-- Request/response schemas and validation rules
-
-### **Architecture Documentation**
-- Domain model documentation
-- API integration guides for frontend developers
-- Business rule specifications
-
 ## 🔐 **Authentication**
 
-The application uses **JWT-based authentication** with a shared authentication system:
+### **Test Users (Development)**
+Pre-seeded test users for development:
+- Email: `john.doe@example.com`, Password: `password123`
+- Email: `jane.smith@example.com`, Password: `password123`
+- Email: `bob.wilson@example.com`, Password: `password123`
 
-### **Login & Token Generation**
+### **Login Example**
 ```bash
 # Login to get JWT token
 curl -X POST http://localhost:8091/v1/users/login \
   -H "Content-Type: application/json" \
   -d '{"email": "john.doe@example.com", "password": "password123"}'
 
-# Response
-{
-  "message": "Login successful",
-  "user": { "id": "...", "email": "...", "name": "..." },
-  "token": {
-    "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-    "expiresIn": 86400
-  }
-}
-```
-
-### **Using Tokens**
-```bash
 # Use token in protected endpoints
 curl -X GET http://localhost:8091/v1/users/profile \
   -H "Authorization: Bearer <your-jwt-token>"
 ```
 
-### **Test Users**
-Pre-seeded test users for development:
-- Email: `john.doe@example.com`, Password: `password123`
-- Email: `jane.smith@example.com`, Password: `password123`
-- Email: `bob.wilson@example.com`, Password: `password123`
+## 📚 **Documentation**
 
-### **For Developers**
-- 📖 **[Authentication Guide](docs/AUTHENTICATION.md)** - Complete implementation guide
-- 🛠️ **[Implementation Examples](examples/)** - Cart and orders controller examples
-- 🔗 **Shared Auth Module** - Global JWT authentication system
+- **Interactive API Documentation**: Available at `/api` when running the server
+- **Module-specific Documentation**: See individual module README files for detailed architecture and implementation guides
+- **Architecture Patterns**: Domain-Driven Design, CQRS, Onion Architecture
 
 ## 🌟 **Technical Highlights**
 
-### **Domain-Driven Design**
-- **Entities**: Encapsulate business logic and invariants
-- **Value Objects**: Immutable objects with behavior
-- **Aggregates**: Consistency boundaries for business operations
-- **Repository Pattern**: Abstract data access layer
-
-### **CQRS Implementation**
-- **Commands**: Write operations with business validation
-- **Queries**: Optimized read operations
-- **Handlers**: Separation of concerns for each operation
-- **Events**: Future-ready for event sourcing
-
-### **Database Adapter Pattern**
-- **Interface Abstraction**: Clean separation between business logic and data storage
-- **Multiple Implementations**: Support for different database types
-- **Easy Switching**: Change databases without code modifications
-- **Development Flexibility**: Use mock data for rapid development
-- **Production Ready**: PostgreSQL adapter for scalable production deployments
-
-### **Validation & Security**
-- **Input Sanitization**: Automatic trimming and normalization
-- **Business Validation**: Domain-specific rules and constraints  
-- **Type Safety**: Full TypeScript implementation
-- **Error Boundaries**: Comprehensive error handling
-
-## 🔮 **Future Enhancements**
-
-### **Planned Features**
-- [x] **PostgreSQL Integration**: Production-ready database adapter
-- [x] **JWT Authentication**: Real token-based authentication system
-- [ ] **Email Verification**: User registration confirmation
-- [ ] **Address Geocoding**: Automatic coordinate resolution
-- [ ] **Rate Limiting**: API protection and throttling
-- [ ] **Refresh Tokens**: Enhanced token security
-
-### **Database Adapter Pattern**
-- ✅ **Adapter Interface**: Abstract database operations
-- ✅ **Mock Database Adapter**: In-memory storage for development/testing
-- ✅ **PostgreSQL Adapter**: Production-ready database implementation
-- ✅ **Factory Pattern**: Easy switching between database implementations
-- ✅ **Configuration-driven**: Switch databases via environment variables
-
-### **Authentication System**
-- ✅ **JWT Token Generation**: Secure token creation and validation
-- ✅ **Global Auth Module**: Shared authentication across all modules
-- ✅ **User Isolation**: Secure user-scoped data access
-- ✅ **Developer Documentation**: Complete implementation guides and examples
-- ✅ **Type Safety**: Full TypeScript support for user data
-
-### **Scalability Considerations**
-- [ ] **Event Sourcing**: Audit log and event replay
-- [ ] **Database Optimization**: Indexes and query optimization
-- [ ] **Caching Layer**: Redis for session and data caching
-- [ ] **Microservice Architecture**: Service decomposition
+- **Domain-Driven Design** with rich domain models and business rules
+- **CQRS Pattern** with separate command/query handling
+- **Database Adapter Pattern** supporting multiple database implementations
+- **JWT Authentication** with shared auth system across modules
+- **Comprehensive Testing** with unit and integration tests
+- **Type Safety** with strict TypeScript implementation
 
 ---
 
 ## 👥 **Contributing**
-
-### **Commit Convention**
-
-This project follows [Conventional Commits v1.0.0-beta.4](https://www.conventionalcommits.org/en/v1.0.0-beta.4/) for consistent and semantic commit messages.
-
-#### **Commit Message Format**
-
-```
-<type>[optional scope]: <description>
-
-[optional body]
-
-[optional footer(s)]
-```
-
-#### **Types**
-
-- **feat**: A new feature for the user
-- **fix**: A bug fix for the user
-- **docs**: Changes to documentation
-- **style**: Formatting, missing semi colons, etc; no code change
-- **refactor**: Refactoring production code
-- **test**: Adding tests, refactoring test; no production code change
-- **chore**: Updating build tasks, package manager configs, etc; no production code change
-- **perf**: Performance improvements
-- **ci**: Changes to CI configuration files and scripts
-- **build**: Changes that affect the build system or external dependencies
-
-#### **Examples**
-
-```bash
-# New feature
-feat(users): add multi-address support with geolocation
-
-# Bug fix
-fix(auth): resolve token validation issue in bearer guard
-
-# Documentation
-docs: update API documentation with new endpoints
-
-# Refactoring
-refactor(users): extract address validation into separate service
-
-# Performance improvement
-perf(database): optimize user query with proper indexing
-
-# Breaking change
-feat(api)!: change user registration endpoint structure
-
-BREAKING CHANGE: The user registration endpoint now requires 
-an initial address object in the request body.
-```
-
-#### **Scope Guidelines**
-
-Common scopes for this project:
-- **users**: User management features
-- **auth**: Authentication and authorization
-- **api**: API-related changes
-- **database**: Database and persistence layer
-- **validation**: Input validation and business rules
-- **docs**: Documentation updates
-- **tests**: Test-related changes
-
-#### **Commit Best Practices**
-
-1. **Use imperative mood**: "add feature" not "added feature"
-2. **Keep subject line under 50 characters**
-3. **Capitalize first letter of description**
-4. **No period at the end of subject line**
-5. **Use body to explain what and why, not how**
-6. **Reference issues/PRs in footer**: `Closes #123`
-
-#### **Breaking Changes**
-
-For breaking changes, add `!` after the type/scope and include `BREAKING CHANGE:` in the footer:
-
-```bash
-feat(api)!: redesign user profile response structure
-
-BREAKING CHANGE: User profile endpoint now returns addresses 
-as a separate array instead of a single address object.
-```
-
-#### **Multi-line Example**
-
-```bash
-feat(users): implement comprehensive address management system
-
-- Add support for multiple addresses per user
-- Include geolocation with GPS coordinates for delivery
-- Add address types: HOME, WORK, BILLING, SHIPPING, OTHER
-- Implement business rule: exactly one default address
-- Add distance calculation using Haversine formula
-- Include delivery instructions for riders
-
-Closes #15, #23
-Refs #18
-```
 
 ### **Development Workflow**
 
 1. **Create feature branch**: `git checkout -b feat/your-feature-name`
 2. **Make changes**: Follow coding standards and write tests
 3. **Commit changes**: Use conventional commit format
-4. **Push branch**: `git push origin feat/your-feature-name`
-5. **Create Pull Request**: Include description and testing notes
-6. **Code Review**: Address feedback and make updates
-7. **Merge**: Squash commits if multiple commits for single feature
+4. **Create Pull Request**: Include description and testing notes
+
+### **Commit Convention**
+
+This project follows [Conventional Commits](https://www.conventionalcommits.org/) format:
+
+```bash
+# Examples
+feat(users): add multi-address support with geolocation
+fix(auth): resolve token validation issue in bearer guard
+docs: update API documentation with new endpoints
+refactor(cart): extract discount logic into service
+```
 
 ### **Code Standards**
 
-- **TypeScript**: Strict mode enabled with comprehensive typing
-- **ESLint**: Enforced code style and best practices
-- **Prettier**: Consistent code formatting
+- **TypeScript**: Strict mode with comprehensive typing
+- **ESLint & Prettier**: Enforced code style and formatting
 - **Testing**: Maintain test coverage above 80%
-- **Documentation**: Update relevant docs with changes
+- **Documentation**: Update module README files with changes
 
 ---
