@@ -306,8 +306,8 @@ PUT    /v1/users/addresses/:id/default # Set as default address (requires auth)
 ## 🔧 **Getting Started**
 
 ### **Prerequisites**
-- Node.js 18+ 
-- npm 9+
+- Node.js 22+ 
+- npm 10+
 
 ### **Installation & Setup**
 
@@ -404,37 +404,6 @@ npm run test:watch
 # Run test coverage
 npm run test:cov
 ```
-
-## 🏪 **Real-World E-commerce Features**
-
-### **Delivery & Logistics**
-- **GPS Coordinates**: Precise delivery location for riders
-- **Delivery Instructions**: Special notes for delivery (gate codes, building access)
-- **Distance Calculation**: Route optimization and delivery fee calculation
-- **Address Types**: Organized address management (Home, Work, Billing, Shipping)
-
-### **Business Rules**
-- **Minimum Age**: Users must be 13+ years old
-- **Address Constraints**: At least one address, exactly one default
-- **Data Integrity**: Soft deletion, audit trails, duplicate prevention
-- **Input Validation**: Email normalization, password strength, coordinate validation
-
-### **API Design**
-- **Consistent Response Format**: Standardized JSON responses
-- **Proper HTTP Status Codes**: RESTful conventions
-- **Comprehensive Validation**: Input sanitization and business rule validation
-- **Error Handling**: Detailed error messages for debugging
-
-## 🧪 **Testing Coverage**
-
-The project includes comprehensive test coverage:
-
-- **Unit Tests**: Domain entities, value objects, and business logic
-- **Integration Tests**: Application services and use cases  
-- **API Tests**: Controller endpoints and validation
-- **Test Coverage**: 100+ test cases covering critical business logic
-
-**Current Test Results**: ✅ 100 passing tests
 
 ## 📚 **Documentation**
 
@@ -667,15 +636,3 @@ Refs #18
 - **Documentation**: Update relevant docs with changes
 
 ---
-
-## 📝 **Development Notes**
-
-This project demonstrates modern backend development practices suitable for enterprise e-commerce applications. The architecture is designed for scalability, maintainability, and testability.
-
-**Key Design Decisions:**
-- **Multiple addresses per user**: Real-world e-commerce requirement
-- **Geolocation support**: Enable precise delivery and logistics
-- **Comprehensive validation**: Ensure data integrity and user experience
-- **Mock data approach**: Rapid development and testing without database complexity
-
-The codebase follows SOLID principles and clean architecture patterns, making it easy to extend and maintain as business requirements evolve.

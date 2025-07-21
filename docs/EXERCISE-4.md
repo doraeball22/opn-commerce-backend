@@ -2,12 +2,16 @@
 
 This section proposes a microservices architecture for an MVP Instagram-like application, prioritizing time-to-market, cost-effectiveness, and extensibility using serverless services on AWS and specialized third-party services.
 
-### Architecture Diagram (with Enhanced Security)
+### Architecture Diagram
+![Architecture Diagram](./images/OPN_Commerge_assignment_4.png)
+
+<details>
+<summary>📋 View Mermaid Code (Click to expand)</summary>
 
 ```mermaid
 graph TD
     subgraph "User Client (Web & Mobile)"
-        Client[Ionic App w/ Capacitor <br/> (React/Angular/Vue)]
+        Client[Ionic App w/ Capacitor (React/Angular/Vue)]
     end
 
     subgraph "Third-Party Services"
@@ -73,15 +77,19 @@ graph TD
     Lambda_Analytics -- "Retrieves Secrets from" --> SecretsManager
 ```
 
+</details>
+
 ### Architectural Analysis
 
 #### Design Choices
 
-**Frontend Framework:** The client is built using Ionic with Capacitor. This allows for a single codebase to be deployed as a native iOS app, Android app, and a Progressive Web App (PWA), dramatically accelerating development.
+**Amplify Gen 2:** The architecture leverages AWS Amplify Gen 2 for its serverless capabilities, fullstack development, allowing rapid development and deployment of the application. Amplify provides the utility including Auth, API, Storage, Real-time Data, and Hosting.
+
+**Frontend Framework:** The client is built using Ionic with Capacitor. This allows for a single codebase to be deployed as a hybrid app iOS app, Android app, and a Progressive Web App (PWA), dramatically accelerating development.
 
 **Notification Service:** The architecture uses a specialized third-party service like OneSignal for its superior developer experience and rich feature set, aligning with the goal of MVP speed.
 
-**A/B Testing Platform:** Optimizely is integrated for client-side A/B testing and feature flagging. This empowers the product team to run experiments on UI/UX and feature variations directly, enabling data-driven decisions without requiring backend deployments for each test.
+**A/B Testing Platform & Feature Flag:** Optimizely is integrated for client-side A/B testing and feature flagging. This empowers the product team to run experiments on UI/UX and feature variations directly, enabling data-driven decisions without requiring backend deployments for each test.
 
 #### Security & Compliance
 
@@ -91,24 +99,21 @@ graph TD
 
 **Secrets Management:** All sensitive credentials (e.g., OneSignal API keys) are stored in AWS Secrets Manager, not in code. Lambda functions are granted specific IAM permissions to retrieve secrets at runtime.
 
-**Fine-Grained Authorization:** AWS AppSync resolvers enforce fine-grained authorization rules, ensuring a user can only access or modify their own data.
-
-**Principle of Least Privilege (IAM):** All IAM roles for Lambda functions and other services are scoped with the minimum necessary permissions, reducing the blast radius in case of a compromise.
+**Fine-Grained Authorization:** AWS AppSync resolvers enforce fine-grained authorization rules, ensuring a user can only access or modify their own data and easier integrate with AWS Cognito and user pool.
 
 **Data Encryption:** All data is encrypted both in transit (using TLS 1.2+) and at rest (using default server-side encryption on DynamoDB and S3).
-
-**Client-Side Security:** The Ionic app uses secure storage plugins for persisting sensitive tokens, avoiding insecure localStorage.
 
 ### ✅ Pros
 - **Fast Time-to-Market:** The combination of Ionic, AWS Amplify Gen 2, OneSignal, and Optimizely creates a powerful stack for rapid, data-driven, cross-platform development.
 - **Low Initial Cost:** The serverless, pay-per-use model is perfect for an MVP.
 - **Automatic Scaling:** Services like Lambda, DynamoDB, and AppSync scale automatically.
 - **Data-Driven Decisions:** Optimizely enables product iteration based on user behavior rather than guesswork.
+- **CICD Ready:** Amplify Gen 2 provides built-in CI/CD capabilities, allowing for automated deployments and separation of the environment configurations (dev, staging, prod).
 
 ### ❌ Cons
-- **Vendor Lock-in:** The architecture is coupled with multiple vendors (AWS, Ionic, OneSignal, Optimizely), increasing integration complexity.
-- **Potential Cost at Scale:** While cost-effective for an MVP, the combined cost of multiple SaaS and serverless services can become significant at high volume.
-- **Performance Overhead:** Each additional third-party SDK (like Optimizely) can add to the initial load time and complexity of the client application.
+- **Learning curve:** Using Amplify Gen 2 and integrating multiple third-party services can have a steep learning curve for new developers. and the developer need to be familiar amplify cli and the Amplify Gen 2 features.
+- **Stuck with AWS** as use of Amplify Gen 2 ties the architecture closely to AWS services, making it difficult to migrate to other cloud providers in the future.
+- **Amplify Gen 2 Limmitations and buggy behavior:** Amplify Gen 2 is still evolving, and some features may not be as stable or well-documented.
 
 ### ⚠️ Risks
 - **Cost Overruns:** A misconfigured service poses the biggest risk. Mitigation: Implement strict AWS Budgets and Billing Alarms.
