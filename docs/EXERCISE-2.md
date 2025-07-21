@@ -597,179 +597,276 @@ graph TD
 
 ## 🚀 Deployment Architecture
 
-### Simple Docker Compose Deployment
+### AWS ECS Deployment (Following NestJS Guidelines)
 
 ```mermaid
 graph TB
     subgraph "GitHub Repository"
         CODE[Source Code]
         DOCKERFILE[Dockerfile]
-        COMPOSE_FILES[docker-compose.yml<br/>docker-compose.prod.yml]
-        ENV_EXAMPLE[.env.example]
+        TASKDEF[ecs-task-definition.json]
+        APPSPEC[appspec.yml]
     end
 
     subgraph "GitHub Actions CI/CD"
         TRIGGER[Push to main]
-        BUILD[Build Docker Images]
+        BUILD[Build & Push to ECR]
         TEST[Run Tests]
-        DEPLOY[Deploy via SSH]
+        DEPLOY[Deploy to ECS]
     end
 
-    subgraph "Production Server (EC2)"
-        subgraph "Docker Compose Stack"
-            NGINX[NGINX Container<br/>Reverse Proxy & SSL]
-            API1[API Container 1]
-            API2[API Container 2]
-            API3[API Container 3]
-            WORKER[Worker Container]
+    subgraph "AWS Infrastructure"
+        subgraph "Container Services"
+            ECR[AWS ECR<br/>Container Registry]
+            ECS_CLUSTER[ECS Cluster<br/>Fargate]
+            ECS_SERVICE[ECS Service<br/>Auto Scaling]
+            ALB[Application Load Balancer<br/>SSL Termination]
         end
         
-        ENV_PROD[.env.production]
-        VOLUMES[Docker Volumes]
-    end
-
-    subgraph "AWS Managed Services"
-        RDS[AWS RDS<br/>PostgreSQL]
-        ELASTICACHE[AWS ElastiCache<br/>Redis]
-        S3[AWS S3<br/>File Storage]
+        subgraph "Database & Cache"
+            RDS[AWS RDS<br/>PostgreSQL Multi-AZ]
+            ELASTICACHE_REDIS[ElastiCache<br/>Redis Cluster]
+            ELASTICACHE_MEMCACHED[ElastiCache<br/>Memcached]
+        end
+        
+        subgraph "Storage & CDN"
+            S3[S3 Bucket<br/>Static Assets]
+            CLOUDFRONT[CloudFront<br/>Global CDN]
+        end
+        
+        subgraph "Security & Networking"
+            VPC[VPC<br/>Private Networking]
+            SECURITY_GROUPS[Security Groups<br/>Access Control]
+            IAM_ROLES[IAM Roles<br/>ecmms-amplify-admin]
+        end
+        
+        subgraph "Monitoring & Logs"
+            CLOUDWATCH[CloudWatch<br/>Logs & Metrics]
+            SECRETS_MANAGER[Secrets Manager<br/>Environment Variables]
+        end
     end
 
     %% CI/CD Flow
     CODE --> TRIGGER
     TRIGGER --> BUILD
+    BUILD --> ECR
     BUILD --> TEST
     TEST --> DEPLOY
-    DEPLOY --> Production Server
+    DEPLOY --> ECS_SERVICE
 
-    %% Docker Compose
-    COMPOSE_FILES --> Docker Compose Stack
-    ENV_PROD --> Docker Compose Stack
-
-    %% Service connections
-    NGINX --> API1
-    NGINX --> API2
-    NGINX --> API3
+    %% ECS Architecture
+    ECR --> ECS_SERVICE
+    ALB --> ECS_SERVICE
+    ECS_SERVICE --> ECS_CLUSTER
     
-    API1 --> RDS
-    API2 --> RDS
-    API3 --> RDS
-    API1 --> ELASTICACHE
-    API2 --> ELASTICACHE
-    API3 --> ELASTICACHE
-    WORKER --> RDS
-    WORKER --> ELASTICACHE
+    %% Data connections
+    ECS_SERVICE --> RDS
+    ECS_SERVICE --> ELASTICACHE_REDIS
+    ECS_SERVICE --> ELASTICACHE_MEMCACHED
+    ECS_SERVICE --> S3
     
-    API1 --> S3
-    API2 --> S3
-    API3 --> S3
+    %% Security & Config
+    ECS_SERVICE --> SECRETS_MANAGER
+    ECS_SERVICE --> IAM_ROLES
+    VPC --> ECS_SERVICE
+    SECURITY_GROUPS --> ECS_SERVICE
+    
+    %% CDN
+    S3 --> CLOUDFRONT
+    ALB --> CLOUDFRONT
+    
+    %% Monitoring
+    ECS_SERVICE --> CLOUDWATCH
+    RDS --> CLOUDWATCH
+    ELASTICACHE_REDIS --> CLOUDWATCH
 
     classDef gitClass fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
-    classDef dockerClass fill:#e8f5e8,stroke:#388e3c,stroke-width:2px
+    classDef ecsClass fill:#e8f5e8,stroke:#388e3c,stroke-width:2px
     classDef awsClass fill:#fff3e0,stroke:#f57c00,stroke-width:2px
+    classDef securityClass fill:#ffebee,stroke:#c62828,stroke-width:2px
 
-    class CODE,DOCKERFILE,COMPOSE_FILES,ENV_EXAMPLE,TRIGGER,BUILD,TEST,DEPLOY gitClass
-    class NGINX,API1,API2,API3,WORKER,ENV_PROD,VOLUMES dockerClass
-    class RDS,ELASTICACHE,S3 awsClass
+    class CODE,DOCKERFILE,TASKDEF,APPSPEC,TRIGGER,BUILD,TEST,DEPLOY gitClass
+    class ECR,ECS_CLUSTER,ECS_SERVICE,ALB ecsClass
+    class RDS,ELASTICACHE_REDIS,ELASTICACHE_MEMCACHED,S3,CLOUDFRONT,CLOUDWATCH,SECRETS_MANAGER awsClass
+    class VPC,SECURITY_GROUPS,IAM_ROLES securityClass
 ```
 
-#### Production Docker Compose (docker-compose.prod.yml):
+#### ECS Task Definition (ecs-task-definition.json):
 
-```yaml
-version: '3.8'
-
-services:
-  nginx:
-    image: nginx:alpine
-    container_name: opn-nginx
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
-      - ./nginx/ssl:/etc/nginx/ssl
-    depends_on:
-      - api
-    restart: always
-
-  api:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    image: opn-commerce-api:latest
-    environment:
-      - NODE_ENV=production
-      - PORT=8091
-      - DATABASE_URL=${DATABASE_URL}
-      - REDIS_URL=${REDIS_URL}
-      - JWT_SECRET=${JWT_SECRET}
-      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
-      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
-      - S3_BUCKET=${S3_BUCKET}
-    deploy:
-      replicas: 3
-    restart: always
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8091/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-
-  worker:
-    build:
-      context: .
-      dockerfile: Dockerfile.worker
-    image: opn-commerce-worker:latest
-    environment:
-      - NODE_ENV=production
-      - DATABASE_URL=${DATABASE_URL}
-      - REDIS_URL=${REDIS_URL}
-    restart: always
-    depends_on:
-      - api
-
-networks:
-  default:
-    driver: bridge
-
-volumes:
-  nginx_ssl:
-  upload_data:
+```json
+{
+  "family": "opn-commerce-api",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "1024",
+  "memory": "2048",
+  "executionRoleArn": "arn:aws:iam::ACCOUNT:role/ecsTaskExecutionRole",
+  "taskRoleArn": "arn:aws:iam::ACCOUNT:role/ecmms-amplify-admin",
+  "containerDefinitions": [
+    {
+      "name": "opn-commerce-api",
+      "image": "ACCOUNT.dkr.ecr.REGION.amazonaws.com/opn-commerce:latest",
+      "portMappings": [
+        {
+          "containerPort": 8091,
+          "protocol": "tcp"
+        }
+      ],
+      "essential": true,
+      "environment": [
+        {
+          "name": "NODE_ENV",
+          "value": "production"
+        },
+        {
+          "name": "PORT",
+          "value": "8091"
+        }
+      ],
+      "secrets": [
+        {
+          "name": "DATABASE_URL",
+          "valueFrom": "arn:aws:secretsmanager:REGION:ACCOUNT:secret:opn-commerce/database-url"
+        },
+        {
+          "name": "REDIS_URL",
+          "valueFrom": "arn:aws:secretsmanager:REGION:ACCOUNT:secret:opn-commerce/redis-url"
+        },
+        {
+          "name": "JWT_SECRET",
+          "valueFrom": "arn:aws:secretsmanager:REGION:ACCOUNT:secret:opn-commerce/jwt-secret"
+        }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/opn-commerce",
+          "awslogs-region": "REGION",
+          "awslogs-stream-prefix": "ecs"
+        }
+      },
+      "healthCheck": {
+        "command": [
+          "CMD-SHELL",
+          "curl -f http://localhost:8091/health || exit 1"
+        ],
+        "interval": 30,
+        "timeout": 5,
+        "retries": 3,
+        "startPeriod": 60
+      }
+    }
+  ]
+}
 ```
 
-#### GitHub Actions Deployment (.github/workflows/deploy.yml):
+#### GitHub Actions AWS ECS Deployment (.github/workflows/deploy.yml):
 
 ```yaml
-name: Deploy to Production
+name: Deploy to AWS ECS
 
 on:
   push:
     branches: [main]
 
+env:
+  AWS_REGION: us-east-1
+  ECR_REPOSITORY: opn-commerce
+  ECS_SERVICE: opn-commerce-service
+  ECS_CLUSTER: opn-commerce-cluster
+  ECS_TASK_DEFINITION: ecs-task-definition.json
+  CONTAINER_NAME: opn-commerce-api
+
 jobs:
   deploy:
+    name: Deploy to ECS
     runs-on: ubuntu-latest
+    environment: production
+
     steps:
-      - uses: actions/checkout@v3
-      
-      - name: Deploy to server
-        uses: appleboy/ssh-action@v0.1.5
-        with:
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.USERNAME }}
-          key: ${{ secrets.SSH_KEY }}
-          script: |
-            cd /opt/opn-commerce
-            git pull origin main
-            docker-compose -f docker-compose.prod.yml down
-            docker-compose -f docker-compose.prod.yml build
-            docker-compose -f docker-compose.prod.yml up -d
-            docker system prune -f
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v2
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: ${{ env.AWS_REGION }}
+        role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/ecmms-amplify-admin
+
+    - name: Login to Amazon ECR
+      id: login-ecr
+      uses: aws-actions/amazon-ecr-login@v1
+
+    - name: Build, tag, and push image to Amazon ECR
+      id: build-image
+      env:
+        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        IMAGE_TAG: ${{ github.sha }}
+      run: |
+        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+        docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+        echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
+
+    - name: Fill in the new image ID in the Amazon ECS task definition
+      id: task-def
+      uses: aws-actions/amazon-ecs-render-task-definition@v1
+      with:
+        task-definition: ${{ env.ECS_TASK_DEFINITION }}
+        container-name: ${{ env.CONTAINER_NAME }}
+        image: ${{ steps.build-image.outputs.image }}
+
+    - name: Deploy Amazon ECS task definition
+      uses: aws-actions/amazon-ecs-deploy-task-definition@v1
+      with:
+        task-definition: ${{ steps.task-def.outputs.task-definition }}
+        service: ${{ env.ECS_SERVICE }}
+        cluster: ${{ env.ECS_CLUSTER }}
+        wait-for-service-stability: true
+```
+
+#### Dockerfile for AWS ECS:
+
+```dockerfile
+# Multi-stage build for production
+FROM node:18-alpine AS builder
+
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci --only=production && npm cache clean --force
+
+FROM node:18-alpine AS production
+
+# Install curl for health checks
+RUN apk add --no-cache curl
+
+WORKDIR /app
+COPY --from=builder /app/node_modules ./node_modules
+COPY . .
+
+# Build the application
+RUN npm run build
+
+# Create non-root user
+RUN addgroup -g 1001 -S nodejs
+RUN adduser -S nestjs -u 1001
+USER nestjs
+
+EXPOSE 8091
+
+# Use PM2 for production process management
+RUN npm install pm2 -g
+COPY ecosystem.config.js .
+
+CMD ["pm2-runtime", "start", "ecosystem.config.js"]
 ```
 
 #### Key Benefits:
 
-1. **Ultra Simple**: Just Docker Compose, no orchestration complexity
-2. **One Command Deploy**: `docker-compose up -d` handles everything
-3. **GitHub Actions**: Automated deployment on push to main
-4. **Cost Effective**: Single EC2 instance can handle moderate traffic
-5. **Easy Maintenance**: Standard Docker commands for troubleshooting
+1. **AWS Native**: Full integration with AWS services and best practices
+2. **Auto Scaling**: ECS Fargate automatically scales based on demand
+3. **Secure**: Uses IAM roles and Secrets Manager for credential management
+4. **Monitoring**: CloudWatch integration for logs and metrics
+5. **High Availability**: Multi-AZ deployment with load balancer
+6. **Cost Optimized**: Pay only for what you use with Fargate
