@@ -7,6 +7,7 @@ A modern e-commerce backend built with **NestJS**, implementing **Domain-Driven 
 This repository contains solutions for the OPN.Pro Engineering Challenge. See [**Assignment Details**](docs/ASSIGNMENTS.md) for the complete requirements.
 
 ### **Assignment Solutions:**
+   - **Live Demo**: http://opn-commerce-prod.eba-ezypbcyr.ap-southeast-1.elasticbeanstalk.com/api
 
 1. **Exercise 1: RESTful API** ✅ 
    - **Solution**: [User Module Documentation](src/modules/users/README.md)
@@ -203,7 +204,6 @@ DELETE /v1/users/addresses/:id         # Delete address (requires auth)
 3. **Access the application**
    - API Server: http://localhost:8091
    - Swagger Documentation: http://localhost:8091/api
-   - **Live Demo**: http://opn-commerce-prod.eba-ezypbcyr.ap-southeast-1.elasticbeanstalk.com/api
    
    > **Note**: The `.env.example` is pre-configured to work immediately with mock data. No additional setup required!
 
