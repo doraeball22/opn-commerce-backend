@@ -597,86 +597,179 @@ graph TD
 
 ## 🚀 Deployment Architecture
 
-### Container Orchestration
+### Simple Docker Compose Deployment
 
 ```mermaid
 graph TB
-    subgraph "Development"
-        DEV_ENV[Development Environment<br/>Docker Compose]
+    subgraph "GitHub Repository"
+        CODE[Source Code]
+        DOCKERFILE[Dockerfile]
+        COMPOSE_FILES[docker-compose.yml<br/>docker-compose.prod.yml]
+        ENV_EXAMPLE[.env.example]
     end
 
-    subgraph "CI/CD Pipeline"
-        GIT[Git Repository]
-        GITHUB_ACTIONS[GitHub Actions]
-        DOCKER_BUILD[Docker Build]
-        SECURITY_SCAN[Security Scanning]
-        TESTS[Automated Testing]
+    subgraph "GitHub Actions CI/CD"
+        TRIGGER[Push to main]
+        BUILD[Build Docker Images]
+        TEST[Run Tests]
+        DEPLOY[Deploy via SSH]
     end
 
-    subgraph "Container Registry"
-        ECR[AWS ECR<br/>Docker Images]
-    end
-
-    subgraph "Production - Kubernetes"
-        subgraph "Ingress"
-            NGINX_INGRESS[NGINX Ingress Controller]
-            CERT_MANAGER[Cert Manager<br/>SSL Certificates]
+    subgraph "Production Server (EC2)"
+        subgraph "Docker Compose Stack"
+            NGINX[NGINX Container<br/>Reverse Proxy & SSL]
+            API1[API Container 1]
+            API2[API Container 2]
+            API3[API Container 3]
+            WORKER[Worker Container]
         end
         
-        subgraph "Application Pods"
-            API_PODS[API Service Pods<br/>3 replicas]
-            WORKER_PODS[Background Worker Pods<br/>2 replicas]
-        end
-        
-        subgraph "Data Services"
-            POSTGRES_STATEFUL[PostgreSQL StatefulSet]
-            REDIS_DEPLOYMENT[Redis Deployment]
-        end
-        
-        subgraph "Monitoring"
-            PROMETHEUS_OPERATOR[Prometheus Operator]
-            GRAFANA_DEPLOYMENT[Grafana Deployment]
-        end
+        ENV_PROD[.env.production]
+        VOLUMES[Docker Volumes]
     end
 
-    subgraph "External Services"
-        RDS[AWS RDS<br/>Managed PostgreSQL]
-        ELASTICACHE[AWS ElastiCache<br/>Managed Redis]
-        S3_STORAGE[AWS S3<br/>Object Storage]
+    subgraph "AWS Managed Services"
+        RDS[AWS RDS<br/>PostgreSQL]
+        ELASTICACHE[AWS ElastiCache<br/>Redis]
+        S3[AWS S3<br/>File Storage]
     end
 
-    DEV_ENV --> GIT
-    GIT --> GITHUB_ACTIONS
-    GITHUB_ACTIONS --> DOCKER_BUILD
-    DOCKER_BUILD --> SECURITY_SCAN
-    SECURITY_SCAN --> TESTS
-    TESTS --> ECR
+    %% CI/CD Flow
+    CODE --> TRIGGER
+    TRIGGER --> BUILD
+    BUILD --> TEST
+    TEST --> DEPLOY
+    DEPLOY --> Production Server
 
-    ECR --> API_PODS
-    ECR --> WORKER_PODS
+    %% Docker Compose
+    COMPOSE_FILES --> Docker Compose Stack
+    ENV_PROD --> Docker Compose Stack
 
-    NGINX_INGRESS --> API_PODS
-    CERT_MANAGER --> NGINX_INGRESS
+    %% Service connections
+    NGINX --> API1
+    NGINX --> API2
+    NGINX --> API3
+    
+    API1 --> RDS
+    API2 --> RDS
+    API3 --> RDS
+    API1 --> ELASTICACHE
+    API2 --> ELASTICACHE
+    API3 --> ELASTICACHE
+    WORKER --> RDS
+    WORKER --> ELASTICACHE
+    
+    API1 --> S3
+    API2 --> S3
+    API3 --> S3
 
-    API_PODS --> POSTGRES_STATEFUL
-    API_PODS --> REDIS_DEPLOYMENT
-    WORKER_PODS --> POSTGRES_STATEFUL
-
-    POSTGRES_STATEFUL -.-> RDS
-    REDIS_DEPLOYMENT -.-> ELASTICACHE
-    API_PODS --> S3_STORAGE
-
-    PROMETHEUS_OPERATOR --> API_PODS
-    PROMETHEUS_OPERATOR --> WORKER_PODS
-    GRAFANA_DEPLOYMENT --> PROMETHEUS_OPERATOR
-
-    classDef devClass fill:#e1f5fe,stroke:#0277bd,stroke-width:2px
-    classDef cicdClass fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
-    classDef k8sClass fill:#e8f5e8,stroke:#388e3c,stroke-width:2px
+    classDef gitClass fill:#f3e5f5,stroke:#7b1fa2,stroke-width:2px
+    classDef dockerClass fill:#e8f5e8,stroke:#388e3c,stroke-width:2px
     classDef awsClass fill:#fff3e0,stroke:#f57c00,stroke-width:2px
 
-    class DEV_ENV devClass
-    class GIT,GITHUB_ACTIONS,DOCKER_BUILD,SECURITY_SCAN,TESTS,ECR cicdClass
-    class NGINX_INGRESS,CERT_MANAGER,API_PODS,WORKER_PODS,POSTGRES_STATEFUL,REDIS_DEPLOYMENT,PROMETHEUS_OPERATOR,GRAFANA_DEPLOYMENT k8sClass
-    class RDS,ELASTICACHE,S3_STORAGE awsClass
+    class CODE,DOCKERFILE,COMPOSE_FILES,ENV_EXAMPLE,TRIGGER,BUILD,TEST,DEPLOY gitClass
+    class NGINX,API1,API2,API3,WORKER,ENV_PROD,VOLUMES dockerClass
+    class RDS,ELASTICACHE,S3 awsClass
 ```
+
+#### Production Docker Compose (docker-compose.prod.yml):
+
+```yaml
+version: '3.8'
+
+services:
+  nginx:
+    image: nginx:alpine
+    container_name: opn-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/ssl:/etc/nginx/ssl
+    depends_on:
+      - api
+    restart: always
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: opn-commerce-api:latest
+    environment:
+      - NODE_ENV=production
+      - PORT=8091
+      - DATABASE_URL=${DATABASE_URL}
+      - REDIS_URL=${REDIS_URL}
+      - JWT_SECRET=${JWT_SECRET}
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - S3_BUCKET=${S3_BUCKET}
+    deploy:
+      replicas: 3
+    restart: always
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8091/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.worker
+    image: opn-commerce-worker:latest
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=${DATABASE_URL}
+      - REDIS_URL=${REDIS_URL}
+    restart: always
+    depends_on:
+      - api
+
+networks:
+  default:
+    driver: bridge
+
+volumes:
+  nginx_ssl:
+  upload_data:
+```
+
+#### GitHub Actions Deployment (.github/workflows/deploy.yml):
+
+```yaml
+name: Deploy to Production
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Deploy to server
+        uses: appleboy/ssh-action@v0.1.5
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            cd /opt/opn-commerce
+            git pull origin main
+            docker-compose -f docker-compose.prod.yml down
+            docker-compose -f docker-compose.prod.yml build
+            docker-compose -f docker-compose.prod.yml up -d
+            docker system prune -f
+```
+
+#### Key Benefits:
+
+1. **Ultra Simple**: Just Docker Compose, no orchestration complexity
+2. **One Command Deploy**: `docker-compose up -d` handles everything
+3. **GitHub Actions**: Automated deployment on push to main
+4. **Cost Effective**: Single EC2 instance can handle moderate traffic
+5. **Easy Maintenance**: Standard Docker commands for troubleshooting
