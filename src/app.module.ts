@@ -12,7 +12,9 @@ import { appConfig, databaseConfig, configValidationSchema } from './config';
 // Conditionally import database module based on configuration
 const getDatabaseModule = () => {
   const databaseType = process.env.DATABASE_TYPE || 'mock';
-  return databaseType === 'postgresql' ? DatabaseModule.forRoot() : DatabaseModule.forMock();
+  return databaseType === 'postgresql'
+    ? DatabaseModule.forRoot()
+    : DatabaseModule.forMock();
 };
 
 @Module({

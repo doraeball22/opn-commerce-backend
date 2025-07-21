@@ -110,7 +110,10 @@ export class PostgreSQLDatabaseAdapterFactory {
    * Gets recommended database type based on environment.
    */
   getRecommendedType(): DatabaseType {
-    const nodeEnv = this.configService.get<string>('app.nodeEnv', 'development');
+    const nodeEnv = this.configService.get<string>(
+      'app.nodeEnv',
+      'development',
+    );
 
     switch (nodeEnv) {
       case 'production':
