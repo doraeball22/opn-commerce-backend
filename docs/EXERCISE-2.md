@@ -595,56 +595,6 @@ graph TD
     class WAF,DDOS,SSL,RATE_LIMIT,JWT_GUARD,RBAC,API_KEY,ENCRYPTION,AUDIT,BACKUP securityClass
 ```
 
-## 📊 Performance Monitoring
-
-### System Monitoring Dashboard
-
-```mermaid
-graph TB
-    subgraph "Metrics Collection"
-        APP_METRICS[Application Metrics<br/>Response Times, Throughput]
-        DB_METRICS[Database Metrics<br/>Query Performance, Connections]
-        INFRA_METRICS[Infrastructure Metrics<br/>CPU, Memory, Network]
-        BUSINESS_METRICS[Business Metrics<br/>Orders, Revenue, Users]
-    end
-
-    subgraph "Monitoring Stack"
-        PROMETHEUS[Prometheus<br/>Metrics Storage]
-        GRAFANA[Grafana<br/>Visualization]
-        ALERTMANAGER[AlertManager<br/>Notifications]
-        JAEGER[Jaeger<br/>Distributed Tracing]
-    end
-
-    subgraph "Alerting Channels"
-        SLACK[Slack Notifications]
-        EMAIL_ALERT[Email Alerts]
-        PAGERDUTY[PagerDuty]
-        SMS_ALERT[SMS Alerts]
-    end
-
-    APP_METRICS --> PROMETHEUS
-    DB_METRICS --> PROMETHEUS
-    INFRA_METRICS --> PROMETHEUS
-    BUSINESS_METRICS --> PROMETHEUS
-
-    PROMETHEUS --> GRAFANA
-    PROMETHEUS --> ALERTMANAGER
-    PROMETHEUS --> JAEGER
-
-    ALERTMANAGER --> SLACK
-    ALERTMANAGER --> EMAIL_ALERT
-    ALERTMANAGER --> PAGERDUTY
-    ALERTMANAGER --> SMS_ALERT
-
-    classDef metricsClass fill:#e8f5e8,stroke:#2e7d32,stroke-width:2px
-    classDef monitoringClass fill:#fff3e0,stroke:#f57c00,stroke-width:2px
-    classDef alertClass fill:#fce4ec,stroke:#c2185b,stroke-width:2px
-
-    class APP_METRICS,DB_METRICS,INFRA_METRICS,BUSINESS_METRICS metricsClass
-    class PROMETHEUS,GRAFANA,ALERTMANAGER,JAEGER monitoringClass
-    class SLACK,EMAIL_ALERT,PAGERDUTY,SMS_ALERT alertClass
-```
-
 ## 🚀 Deployment Architecture
 
 ### Container Orchestration
