@@ -104,7 +104,6 @@ import {
 
     // Validators
     AddressValidationService,
-
   ],
   exports: [
     'UserRepository',

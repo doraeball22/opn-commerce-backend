@@ -5,7 +5,9 @@ import { CategoryRepository } from '../../domain/repositories/category.repositor
 import { Category } from '../../domain/entities/category.entity';
 
 @CommandHandler(UpdateCategoryCommand)
-export class UpdateCategoryHandler implements ICommandHandler<UpdateCategoryCommand> {
+export class UpdateCategoryHandler
+  implements ICommandHandler<UpdateCategoryCommand>
+{
   constructor(
     @Inject('CategoryRepository')
     private readonly categoryRepository: CategoryRepository,
@@ -54,9 +56,12 @@ export class UpdateCategoryHandler implements ICommandHandler<UpdateCategoryComm
         }
 
         // Check for circular reference (would create infinite loop)
-        const descendants = await this.categoryRepository.findDescendants(categoryId);
-        if (descendants.some(desc => desc.id === parentId)) {
-          throw new ConflictException('Cannot move category to its own descendant');
+        const descendants =
+          await this.categoryRepository.findDescendants(categoryId);
+        if (descendants.some((desc) => desc.id === parentId)) {
+          throw new ConflictException(
+            'Cannot move category to its own descendant',
+          );
         }
       }
     }

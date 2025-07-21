@@ -14,12 +14,18 @@ describe('ProductWeight Value Object', () => {
     });
 
     it('should throw error for negative weight', () => {
-      expect(() => ProductWeight.create(-100, WeightUnit.GRAMS)).toThrow('Weight cannot be negative');
+      expect(() => ProductWeight.create(-100, WeightUnit.GRAMS)).toThrow(
+        'Weight cannot be negative',
+      );
     });
 
     it('should throw error for invalid weight value', () => {
-      expect(() => ProductWeight.create(NaN, WeightUnit.GRAMS)).toThrow('Weight value must be a valid number');
-      expect(() => ProductWeight.create(Infinity, WeightUnit.GRAMS)).toThrow('Weight must be finite');
+      expect(() => ProductWeight.create(NaN, WeightUnit.GRAMS)).toThrow(
+        'Weight value must be a valid number',
+      );
+      expect(() => ProductWeight.create(Infinity, WeightUnit.GRAMS)).toThrow(
+        'Weight must be finite',
+      );
     });
 
     it('should handle zero weight', () => {
@@ -48,13 +54,21 @@ describe('ProductWeight Value Object', () => {
     });
 
     it('should throw error for invalid format', () => {
-      expect(() => ProductWeight.fromString('invalid')).toThrow('Invalid weight format');
-      expect(() => ProductWeight.fromString('100')).toThrow('Invalid weight format');
-      expect(() => ProductWeight.fromString('g 100')).toThrow('Invalid weight format');
+      expect(() => ProductWeight.fromString('invalid')).toThrow(
+        'Invalid weight format',
+      );
+      expect(() => ProductWeight.fromString('100')).toThrow(
+        'Invalid weight format',
+      );
+      expect(() => ProductWeight.fromString('g 100')).toThrow(
+        'Invalid weight format',
+      );
     });
 
     it('should throw error for unsupported unit', () => {
-      expect(() => ProductWeight.fromString('100 xyz')).toThrow('Invalid weight format. Expected format: "100 g", "1.5 kg", etc.');
+      expect(() => ProductWeight.fromString('100 xyz')).toThrow(
+        'Invalid weight format. Expected format: "100 g", "1.5 kg", etc.',
+      );
     });
   });
 
@@ -107,7 +121,7 @@ describe('ProductWeight Value Object', () => {
 
     it('should add weights with different units', () => {
       const weight1 = ProductWeight.create(1, WeightUnit.KILOGRAMS); // 1000g
-      const weight2 = ProductWeight.create(500, WeightUnit.GRAMS);   // 500g
+      const weight2 = ProductWeight.create(500, WeightUnit.GRAMS); // 500g
       const result = weight1.add(weight2);
 
       expect(result.getValue()).toBe(1.5); // Result in kg
@@ -127,7 +141,9 @@ describe('ProductWeight Value Object', () => {
       const weight1 = ProductWeight.create(100, WeightUnit.GRAMS);
       const weight2 = ProductWeight.create(200, WeightUnit.GRAMS);
 
-      expect(() => weight1.subtract(weight2)).toThrow('Weight cannot be negative after subtraction');
+      expect(() => weight1.subtract(weight2)).toThrow(
+        'Weight cannot be negative after subtraction',
+      );
     });
 
     it('should multiply weight by factor', () => {
@@ -148,13 +164,19 @@ describe('ProductWeight Value Object', () => {
 
     it('should throw error for negative multiplication factor', () => {
       const weight = ProductWeight.create(100, WeightUnit.GRAMS);
-      expect(() => weight.multiply(-2)).toThrow('Cannot multiply weight by negative factor');
+      expect(() => weight.multiply(-2)).toThrow(
+        'Cannot multiply weight by negative factor',
+      );
     });
 
     it('should throw error for zero or negative division factor', () => {
       const weight = ProductWeight.create(100, WeightUnit.GRAMS);
-      expect(() => weight.divide(0)).toThrow('Cannot divide weight by zero or negative number');
-      expect(() => weight.divide(-2)).toThrow('Cannot divide weight by zero or negative number');
+      expect(() => weight.divide(0)).toThrow(
+        'Cannot divide weight by zero or negative number',
+      );
+      expect(() => weight.divide(-2)).toThrow(
+        'Cannot divide weight by zero or negative number',
+      );
     });
   });
 

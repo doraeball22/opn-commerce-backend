@@ -18,19 +18,31 @@ describe('ProductSku Value Object', () => {
     });
 
     it('should throw error for empty SKU', () => {
-      expect(() => ProductSku.create('')).toThrow('SKU must be a non-empty string');
-      expect(() => ProductSku.create('   ')).toThrow('SKU must be a non-empty string');
+      expect(() => ProductSku.create('')).toThrow(
+        'SKU must be a non-empty string',
+      );
+      expect(() => ProductSku.create('   ')).toThrow(
+        'SKU must be a non-empty string',
+      );
     });
 
     it('should throw error for SKU exceeding max length', () => {
       const longSku = 'A'.repeat(51);
-      expect(() => ProductSku.create(longSku)).toThrow('SKU must be no more than 50 characters long');
+      expect(() => ProductSku.create(longSku)).toThrow(
+        'SKU must be no more than 50 characters long',
+      );
     });
 
     it('should throw error for invalid characters', () => {
-      expect(() => ProductSku.create('PROD@001')).toThrow('SKU must contain only alphanumeric characters, hyphens, and underscores, and cannot start or end with special characters');
-      expect(() => ProductSku.create('PROD 001')).toThrow('SKU must contain only alphanumeric characters, hyphens, and underscores, and cannot start or end with special characters');
-      expect(() => ProductSku.create('PROD#001')).toThrow('SKU must contain only alphanumeric characters, hyphens, and underscores, and cannot start or end with special characters');
+      expect(() => ProductSku.create('PROD@001')).toThrow(
+        'SKU must contain only alphanumeric characters, hyphens, and underscores, and cannot start or end with special characters',
+      );
+      expect(() => ProductSku.create('PROD 001')).toThrow(
+        'SKU must contain only alphanumeric characters, hyphens, and underscores, and cannot start or end with special characters',
+      );
+      expect(() => ProductSku.create('PROD#001')).toThrow(
+        'SKU must contain only alphanumeric characters, hyphens, and underscores, and cannot start or end with special characters',
+      );
     });
 
     it('should allow valid characters', () => {

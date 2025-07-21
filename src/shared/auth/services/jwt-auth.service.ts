@@ -5,7 +5,7 @@ import { JwtPayload } from '../interfaces/current-user.interface';
 
 /**
  * JWT Authentication Service
- * 
+ *
  * Handles JWT token generation, verification, and validation.
  * This service is shared across all modules that need JWT functionality.
  */
@@ -18,19 +18,25 @@ export class JwtAuthService {
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
   ) {
-    this.jwtSecret = this.configService.get<string>('JWT_SECRET') || 'your-secret-key';
-    this.jwtExpiresIn = this.configService.get<string>('JWT_EXPIRES_IN') || '24h';
+    this.jwtSecret =
+      this.configService.get<string>('JWT_SECRET') || 'your-secret-key';
+    this.jwtExpiresIn =
+      this.configService.get<string>('JWT_EXPIRES_IN') || '24h';
   }
 
   /**
    * Generate a JWT token for a user
-   * 
+   *
    * @param userId - Unique user identifier
    * @param email - User's email address
    * @param name - User's display name
    * @returns Object containing access token and expiration info
    */
-  async generateToken(userId: string, email: string, name: string): Promise<{
+  async generateToken(
+    userId: string,
+    email: string,
+    name: string,
+  ): Promise<{
     accessToken: string;
     expiresIn: number;
   }> {
@@ -53,7 +59,7 @@ export class JwtAuthService {
 
   /**
    * Verify and decode a JWT token
-   * 
+   *
    * @param token - JWT token to verify
    * @returns Decoded JWT payload
    * @throws Error if token is invalid or expired
@@ -70,7 +76,7 @@ export class JwtAuthService {
 
   /**
    * Decode a JWT token without verification (use with caution)
-   * 
+   *
    * @param token - JWT token to decode
    * @returns Decoded payload or null if invalid
    */
@@ -84,7 +90,7 @@ export class JwtAuthService {
 
   /**
    * Parse expiration time string to seconds
-   * 
+   *
    * @param expiresIn - Expiration string (e.g., '24h', '7d', '60s')
    * @returns Expiration time in seconds
    */

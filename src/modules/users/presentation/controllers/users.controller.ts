@@ -8,7 +8,6 @@ import {
   UseGuards,
   HttpCode,
   HttpStatus,
-  Version,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -17,8 +16,11 @@ import {
   ApiBearerAuth,
   ApiBody,
 } from '@nestjs/swagger';
-import { JwtAuthGuard, CurrentUser, ICurrentUser } from '../../../../shared/auth';
-import { User } from '../../domain/entities/user.entity';
+import {
+  JwtAuthGuard,
+  CurrentUser,
+  ICurrentUser,
+} from '../../../../shared/auth';
 import { RegisterUserDto } from '../../application/dto/register-user.dto';
 import { UpdateUserDto } from '../../application/dto/update-user.dto';
 import { ChangePasswordDto } from '../../application/dto/change-password.dto';

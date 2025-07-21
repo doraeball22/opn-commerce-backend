@@ -364,7 +364,8 @@ export class CategoriesController {
   async deleteCategory(
     @CurrentUser() user: ICurrentUser,
     @Param('id') id: string,
-    @Query('permanent', new DefaultValuePipe(false), ParseBoolPipe) permanent: boolean = false,
+    @Query('permanent', new DefaultValuePipe(false), ParseBoolPipe)
+    permanent: boolean = false,
   ) {
     const command = new DeleteCategoryCommand(id, permanent);
 
@@ -412,7 +413,7 @@ export class CategoriesController {
     const categoriesQuery = new GetCategoriesQuery({ search: id });
     const categories = await this.queryBus.execute(categoriesQuery);
     const category = categories.find((c: Category) => c.id === id);
-    
+
     if (!category) {
       return {
         statusCode: HttpStatus.NOT_FOUND,
@@ -442,14 +443,18 @@ export class CategoriesController {
           name: product.name,
           slug: product.slug,
           sku: product.sku,
-          price: product.price ? {
-            amount: product.price.getAmount(),
-            currency: product.price.getCurrency(),
-          } : null,
-          salePrice: product.salePrice ? {
-            amount: product.salePrice.getAmount(),
-            currency: product.salePrice.getCurrency(),
-          } : null,
+          price: product.price
+            ? {
+                amount: product.price.getAmount(),
+                currency: product.price.getCurrency(),
+              }
+            : null,
+          salePrice: product.salePrice
+            ? {
+                amount: product.salePrice.getAmount(),
+                currency: product.salePrice.getCurrency(),
+              }
+            : null,
           status: product.status,
           imageUrl: product.getMainImage(),
           shortDescription: product.shortDescription,

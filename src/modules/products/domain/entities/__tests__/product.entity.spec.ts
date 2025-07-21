@@ -2,7 +2,10 @@ import { Product } from '../product.entity';
 import { ProductSku } from '../../value-objects/product-sku.vo';
 import { Money } from '../../value-objects/money.vo';
 import { ProductStatus } from '../../value-objects/product-status.vo';
-import { ProductWeight, WeightUnit } from '../../value-objects/product-weight.vo';
+import {
+  ProductWeight,
+  WeightUnit,
+} from '../../value-objects/product-weight.vo';
 
 describe('Product Entity', () => {
   describe('create', () => {
@@ -15,7 +18,7 @@ describe('Product Entity', () => {
         ProductSku.create('TEST-001'),
         Money.create(1000, 'THB'),
         10,
-        true
+        true,
       );
 
       expect(product.name).toBe('Test Product');
@@ -36,7 +39,7 @@ describe('Product Entity', () => {
         'Simple description',
         'Simple',
         ProductSku.create('SIMPLE-001'),
-        Money.create(500, 'THB')
+        Money.create(500, 'THB'),
       );
 
       expect(product.stockQuantity).toBe(0);
@@ -54,7 +57,7 @@ describe('Product Entity', () => {
         'Description',
         'Short desc',
         ProductSku.create('TEST-001'),
-        Money.create(1000, 'THB')
+        Money.create(1000, 'THB'),
       );
     });
 
@@ -110,7 +113,7 @@ describe('Product Entity', () => {
         ProductSku.create('TEST-001'),
         Money.create(1000, 'THB'),
         10,
-        true
+        true,
       );
     });
 
@@ -120,7 +123,9 @@ describe('Product Entity', () => {
     });
 
     it('should throw error for negative stock', () => {
-      expect(() => product.updateStock(-5)).toThrow('Stock quantity cannot be negative');
+      expect(() => product.updateStock(-5)).toThrow(
+        'Stock quantity cannot be negative',
+      );
     });
 
     it('should check if in stock', () => {
@@ -154,7 +159,7 @@ describe('Product Entity', () => {
         'Description',
         'Short desc',
         ProductSku.create('TEST-001'),
-        Money.create(1000, 'THB')
+        Money.create(1000, 'THB'),
       );
     });
 
@@ -191,7 +196,7 @@ describe('Product Entity', () => {
         'Description',
         'Short desc',
         ProductSku.create('TEST-001'),
-        Money.create(1000, 'THB')
+        Money.create(1000, 'THB'),
       );
     });
 
@@ -250,7 +255,7 @@ describe('Product Entity', () => {
         'Description',
         'Short desc',
         ProductSku.create('TEST-001'),
-        Money.create(1000, 'THB')
+        Money.create(1000, 'THB'),
       );
     });
 
@@ -294,7 +299,7 @@ describe('Product Entity', () => {
         'Description',
         'Short desc',
         ProductSku.create('TEST-001'),
-        Money.create(1000, 'THB')
+        Money.create(1000, 'THB'),
       );
     });
 
@@ -322,7 +327,7 @@ describe('Product Entity', () => {
         'Description',
         'Short desc',
         ProductSku.create('TEST-001'),
-        Money.create(1000, 'THB')
+        Money.create(1000, 'THB'),
       );
     });
 
@@ -333,12 +338,18 @@ describe('Product Entity', () => {
     });
 
     it('should throw error for invalid rating', () => {
-      expect(() => product.updateRating(-1, 10)).toThrow('Average rating must be between 0 and 5');
-      expect(() => product.updateRating(6, 10)).toThrow('Average rating must be between 0 and 5');
+      expect(() => product.updateRating(-1, 10)).toThrow(
+        'Average rating must be between 0 and 5',
+      );
+      expect(() => product.updateRating(6, 10)).toThrow(
+        'Average rating must be between 0 and 5',
+      );
     });
 
     it('should throw error for negative review count', () => {
-      expect(() => product.updateRating(4.5, -5)).toThrow('Review count cannot be negative');
+      expect(() => product.updateRating(4.5, -5)).toThrow(
+        'Review count cannot be negative',
+      );
     });
 
     it('should have updated rating and review count', () => {
@@ -358,7 +369,7 @@ describe('Product Entity', () => {
         'Description',
         'Short desc',
         ProductSku.create('TEST-001'),
-        Money.create(1000, 'THB')
+        Money.create(1000, 'THB'),
       );
     });
 
@@ -384,7 +395,7 @@ describe('Product Entity', () => {
         'Description',
         'Short desc',
         ProductSku.create('TEST-001'),
-        Money.create(1000, 'THB')
+        Money.create(1000, 'THB'),
       );
 
       expect(product.createdAt).toBeInstanceOf(Date);
@@ -398,15 +409,17 @@ describe('Product Entity', () => {
         'Description',
         'Short desc',
         ProductSku.create('TEST-001'),
-        Money.create(1000, 'THB')
+        Money.create(1000, 'THB'),
       );
 
       const originalUpdatedAt = product.updatedAt;
-      
+
       // Wait a bit to ensure timestamp difference
       setTimeout(() => {
         product.updatePrice(Money.create(1200, 'THB'));
-        expect(product.updatedAt.getTime()).toBeGreaterThan(originalUpdatedAt.getTime());
+        expect(product.updatedAt.getTime()).toBeGreaterThan(
+          originalUpdatedAt.getTime(),
+        );
       }, 10);
     });
   });

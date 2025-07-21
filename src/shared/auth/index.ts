@@ -1,16 +1,16 @@
 /**
  * Shared Authentication Module Exports
- * 
+ *
  * This file provides a clean import interface for all authentication-related
  * functionality that can be used across different modules.
- * 
+ *
  * Usage in feature modules:
- * 
- * import { 
- *   JwtAuthGuard, 
- *   CurrentUser, 
+ *
+ * import {
+ *   JwtAuthGuard,
+ *   CurrentUser,
  *   ICurrentUser,
- *   JwtAuthService 
+ *   JwtAuthService
  * } from '@/shared/auth';
  */
 
@@ -27,7 +27,7 @@ export { JwtAuthGuard } from './guards/jwt-auth.guard';
 export { CurrentUser } from './decorators/current-user.decorator';
 
 // Interfaces & Types
-export type { 
-  ICurrentUser, 
-  JwtPayload 
+export type {
+  ICurrentUser,
+  JwtPayload,
 } from './interfaces/current-user.interface';

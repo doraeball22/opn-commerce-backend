@@ -14,22 +14,22 @@ export interface AuthenticatedRequest extends Request {
 
 /**
  * JWT Authentication Guard
- * 
+ *
  * This guard validates JWT tokens and attaches the user information to the request.
  * Use this guard on any controller or route that requires authentication.
- * 
+ *
  * Usage:
- * 
+ *
  * 1. Controller-level protection:
  *    @Controller('orders')
  *    @UseGuards(JwtAuthGuard)
  *    export class OrdersController { ... }
- * 
+ *
  * 2. Route-level protection:
  *    @Get('profile')
  *    @UseGuards(JwtAuthGuard)
  *    async getProfile(@CurrentUser() user: ICurrentUser) { ... }
- * 
+ *
  * The guard expects the Authorization header to contain a Bearer token:
  * Authorization: Bearer <jwt-token>
  */

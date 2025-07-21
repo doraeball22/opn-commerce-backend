@@ -4,7 +4,9 @@ import { DeleteCategoryCommand } from '../commands/delete-category.command';
 import { CategoryRepository } from '../../domain/repositories/category.repository';
 
 @CommandHandler(DeleteCategoryCommand)
-export class DeleteCategoryHandler implements ICommandHandler<DeleteCategoryCommand> {
+export class DeleteCategoryHandler
+  implements ICommandHandler<DeleteCategoryCommand>
+{
   constructor(
     @Inject('CategoryRepository')
     private readonly categoryRepository: CategoryRepository,

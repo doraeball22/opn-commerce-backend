@@ -65,7 +65,7 @@ describe('GetProductBySlugHandler', () => {
         'Test description',
         'Short desc',
         ProductSku.create('TEST-001'),
-        Money.create(1000, 'THB')
+        Money.create(1000, 'THB'),
       );
 
       mockRepository.findBySlug.mockResolvedValue(mockProduct);
@@ -106,7 +106,9 @@ describe('GetProductBySlugHandler', () => {
       const query = new GetProductBySlugQuery(slug);
 
       // Act & Assert
-      await expect(handler.execute(query)).rejects.toThrow('Database connection failed');
+      await expect(handler.execute(query)).rejects.toThrow(
+        'Database connection failed',
+      );
       expect(mockRepository.findBySlug).toHaveBeenCalledWith(slug);
       expect(mockRepository.findBySlug).toHaveBeenCalledTimes(1);
     });
@@ -135,7 +137,7 @@ describe('GetProductBySlugHandler', () => {
         'Test description',
         'Short desc',
         ProductSku.create('SPECIAL-001'),
-        Money.create(1500, 'THB')
+        Money.create(1500, 'THB'),
       );
 
       mockRepository.findBySlug.mockResolvedValue(mockProduct);

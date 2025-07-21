@@ -14,11 +14,15 @@ describe('Money Value Object', () => {
     });
 
     it('should throw error for negative amount', () => {
-      expect(() => Money.create(-100, 'THB')).toThrow('Money amount cannot be negative');
+      expect(() => Money.create(-100, 'THB')).toThrow(
+        'Money amount cannot be negative',
+      );
     });
 
     it('should throw error for invalid currency', () => {
-      expect(() => Money.create(1000, 'INVALID')).toThrow('Currency must be a 3-letter ISO code');
+      expect(() => Money.create(1000, 'INVALID')).toThrow(
+        'Currency must be a 3-letter ISO code',
+      );
     });
 
     it('should handle zero amount', () => {
@@ -46,9 +50,13 @@ describe('Money Value Object', () => {
     });
 
     it('should throw error for invalid format', () => {
-      expect(() => Money.fromString('invalid')).toThrow('Invalid money amount format');
+      expect(() => Money.fromString('invalid')).toThrow(
+        'Invalid money amount format',
+      );
       expect(() => Money.fromString('')).toThrow('Invalid money amount format');
-      expect(() => Money.fromString('abc')).toThrow('Invalid money amount format');
+      expect(() => Money.fromString('abc')).toThrow(
+        'Invalid money amount format',
+      );
     });
   });
 
@@ -91,14 +99,18 @@ describe('Money Value Object', () => {
       const money1 = Money.create(1000, 'THB');
       const money2 = Money.create(500, 'USD');
 
-      expect(() => money1.add(money2)).toThrow('Cannot operate on different currencies: THB and USD');
+      expect(() => money1.add(money2)).toThrow(
+        'Cannot operate on different currencies: THB and USD',
+      );
     });
 
     it('should throw error when subtracting results in negative', () => {
       const money1 = Money.create(100, 'THB');
       const money2 = Money.create(200, 'THB');
 
-      expect(() => money1.subtract(money2)).toThrow('Money amount cannot be negative after subtraction');
+      expect(() => money1.subtract(money2)).toThrow(
+        'Money amount cannot be negative after subtraction',
+      );
     });
   });
 
@@ -119,7 +131,9 @@ describe('Money Value Object', () => {
       const money1 = Money.create(1000, 'THB');
       const money2 = Money.create(500, 'USD');
 
-      expect(() => money1.isGreaterThan(money2)).toThrow('Cannot operate on different currencies: THB and USD');
+      expect(() => money1.isGreaterThan(money2)).toThrow(
+        'Cannot operate on different currencies: THB and USD',
+      );
     });
   });
 

@@ -6,13 +6,13 @@ import { JwtAuthGuard } from './guards/jwt-auth.guard';
 
 /**
  * Global Authentication Module
- * 
+ *
  * This module provides JWT authentication services that can be used across
  * all feature modules (users, orders, cart, products, etc.).
- * 
+ *
  * The @Global() decorator makes this module available throughout the application
  * without needing to import it in every feature module.
- * 
+ *
  * Exports:
  * - JwtAuthService: For token generation and verification
  * - JwtAuthGuard: For protecting routes with JWT authentication
@@ -31,10 +31,7 @@ import { JwtAuthGuard } from './guards/jwt-auth.guard';
       }),
     }),
   ],
-  providers: [
-    JwtAuthService,
-    JwtAuthGuard,
-  ],
+  providers: [JwtAuthService, JwtAuthGuard],
   exports: [
     JwtAuthService,
     JwtAuthGuard,
