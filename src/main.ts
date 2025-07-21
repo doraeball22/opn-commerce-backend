@@ -46,7 +46,6 @@ async function bootstrap() {
         'JWT-auth',
       )
       .addTag('Users', 'User management endpoints')
-      .addTag('Address', 'User address management endpoints')
       .build();
 
     const document = SwaggerModule.createDocument(app, config);

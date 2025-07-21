@@ -5,6 +5,7 @@ import { ValidationPipe, BadRequestException } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UsersModule } from './modules/users/users.module';
+import { ProductsModule } from './modules/products/products.module';
 import { DatabaseModule } from './modules/database/database.module';
 import { AuthModule } from './shared/auth/auth.module';
 import { AllExceptionsFilter } from './shared/exceptions/all-exceptions.filter';
@@ -35,6 +36,7 @@ const getDatabaseModule = () => {
     getDatabaseModule(),
     AuthModule,
     UsersModule,
+    ProductsModule,
   ],
   controllers: [AppController],
   providers: [
