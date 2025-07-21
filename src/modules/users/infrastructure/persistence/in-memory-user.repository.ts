@@ -75,6 +75,15 @@ export class InMemoryUserRepository extends UserRepository {
     await this.update(user);
   }
 
+  async permanentlyDelete(userId: string): Promise<void> {
+    if (!this.users.has(userId)) {
+      throw new Error('User not found');
+    }
+
+    // Permanently remove user from storage
+    this.users.delete(userId);
+  }
+
   async exists(email: string): Promise<boolean> {
     const user = await this.findByEmail(email);
     return !!user;

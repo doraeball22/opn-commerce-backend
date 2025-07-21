@@ -11,6 +11,7 @@ This project follows enterprise-grade architectural patterns:
 - **CQRS**: Command Query Responsibility Segregation for scalable read/write operations
 - **Repository Pattern**: Abstract data access layer
 - **Value Objects**: Immutable objects representing business concepts
+- **Shared Authentication**: Global JWT-based auth system for all modules
 
 ### **Architecture Layers**
 
@@ -276,7 +277,8 @@ graph TB
 - ✅ **RESTful API** with proper HTTP status codes
 - ✅ **API Versioning** (v1) for backward compatibility
 - ✅ **OpenAPI/Swagger Documentation** at `/api`
-- ✅ **Bearer Token Authentication** (mock implementation)
+- ✅ **JWT Authentication** with token-based security
+- ✅ **Shared Authentication System** for all modules
 - ✅ **Enhanced Validation** with custom validators
 - ✅ **Error Handling** with detailed error messages
 
@@ -285,19 +287,20 @@ graph TB
 ### **User Management**
 ```
 POST   /v1/users/register              # Register new user
-GET    /v1/users/profile               # Get user profile
-PUT    /v1/users/profile               # Update user profile
-DELETE /v1/users/profile               # Delete user account
-PUT    /v1/users/change-password       # Change password
+POST   /v1/users/login                 # Login user and get JWT token
+GET    /v1/users/profile               # Get user profile (requires auth)
+PUT    /v1/users/profile               # Update user profile (requires auth)
+DELETE /v1/users/profile               # Delete user account (requires auth)
+PUT    /v1/users/change-password       # Change password (requires auth)
 ```
 
 ### **Address Management**
 ```
-GET    /v1/users/addresses             # Get user addresses
-POST   /v1/users/addresses             # Add new address
-PUT    /v1/users/addresses/:id         # Update address
-DELETE /v1/users/addresses/:id         # Delete address
-PUT    /v1/users/addresses/:id/default # Set as default address
+GET    /v1/users/addresses             # Get user addresses (requires auth)
+POST   /v1/users/addresses             # Add new address (requires auth)
+PUT    /v1/users/addresses/:id         # Update address (requires auth)
+DELETE /v1/users/addresses/:id         # Delete address (requires auth)
+PUT    /v1/users/addresses/:id/default # Set as default address (requires auth)
 ```
 
 ## 🔧 **Getting Started**
@@ -447,11 +450,43 @@ The project includes comprehensive test coverage:
 
 ## 🔐 **Authentication**
 
-Current implementation uses **Bearer Token Authentication** with mock tokens:
-- `faketoken_user1`: User ID `user-123`
-- `faketoken_user2`: User ID `user-456`
+The application uses **JWT-based authentication** with a shared authentication system:
 
-**Note**: This is a mock implementation for development. Production should integrate with proper authentication services.
+### **Login & Token Generation**
+```bash
+# Login to get JWT token
+curl -X POST http://localhost:8091/v1/users/login \
+  -H "Content-Type: application/json" \
+  -d '{"email": "john.doe@example.com", "password": "password123"}'
+
+# Response
+{
+  "message": "Login successful",
+  "user": { "id": "...", "email": "...", "name": "..." },
+  "token": {
+    "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "expiresIn": 86400
+  }
+}
+```
+
+### **Using Tokens**
+```bash
+# Use token in protected endpoints
+curl -X GET http://localhost:8091/v1/users/profile \
+  -H "Authorization: Bearer <your-jwt-token>"
+```
+
+### **Test Users**
+Pre-seeded test users for development:
+- Email: `john.doe@example.com`, Password: `password123`
+- Email: `jane.smith@example.com`, Password: `password123`
+- Email: `bob.wilson@example.com`, Password: `password123`
+
+### **For Developers**
+- 📖 **[Authentication Guide](docs/AUTHENTICATION.md)** - Complete implementation guide
+- 🛠️ **[Implementation Examples](examples/)** - Cart and orders controller examples
+- 🔗 **Shared Auth Module** - Global JWT authentication system
 
 ## 🌟 **Technical Highlights**
 
@@ -483,18 +518,26 @@ Current implementation uses **Bearer Token Authentication** with mock tokens:
 ## 🔮 **Future Enhancements**
 
 ### **Planned Features**
-- [ ] **PostgreSQL Integration**: Replace in-memory storage
-- [ ] **Real Authentication**: JWT with refresh tokens
+- [x] **PostgreSQL Integration**: Production-ready database adapter
+- [x] **JWT Authentication**: Real token-based authentication system
 - [ ] **Email Verification**: User registration confirmation
 - [ ] **Address Geocoding**: Automatic coordinate resolution
 - [ ] **Rate Limiting**: API protection and throttling
+- [ ] **Refresh Tokens**: Enhanced token security
 
 ### **Database Adapter Pattern**
 - ✅ **Adapter Interface**: Abstract database operations
 - ✅ **Mock Database Adapter**: In-memory storage for development/testing
-- ✅ **PostgreSQL Adapter**: Production-ready database implementation (skeleton)
+- ✅ **PostgreSQL Adapter**: Production-ready database implementation
 - ✅ **Factory Pattern**: Easy switching between database implementations
 - ✅ **Configuration-driven**: Switch databases via environment variables
+
+### **Authentication System**
+- ✅ **JWT Token Generation**: Secure token creation and validation
+- ✅ **Global Auth Module**: Shared authentication across all modules
+- ✅ **User Isolation**: Secure user-scoped data access
+- ✅ **Developer Documentation**: Complete implementation guides and examples
+- ✅ **Type Safety**: Full TypeScript support for user data
 
 ### **Scalability Considerations**
 - [ ] **Event Sourcing**: Audit log and event replay

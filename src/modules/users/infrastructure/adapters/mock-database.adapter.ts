@@ -1,7 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import { DatabaseAdapter } from './database.adapter';
 import { User } from '../../domain/entities/user.entity';
-import { UserAddress } from '../../domain/entities/user-address.entity';
+import {
+  UserAddress,
+  AddressType,
+} from '../../domain/entities/user-address.entity';
+import { Email } from '../../domain/value-objects/email.vo';
+import { Password } from '../../domain/value-objects/password.vo';
+import { Gender } from '../../domain/value-objects/gender.vo';
+import { Address } from '../../domain/value-objects/address.vo';
+import { Location } from '../../domain/value-objects/location.vo';
 
 /**
  * Mock database adapter implementation using in-memory storage.
@@ -16,7 +24,8 @@ export class MockDatabaseAdapter implements DatabaseAdapter {
   // Connection management
   async connect(): Promise<void> {
     this.connected = true;
-    console.log('🔗 Mock Database: Connected');
+    await this.seedTestData();
+    console.log('🔗 Mock Database: Connected with test users seeded');
   }
 
   async disconnect(): Promise<void> {
@@ -32,6 +41,129 @@ export class MockDatabaseAdapter implements DatabaseAdapter {
 
   async healthCheck(): Promise<boolean> {
     return this.connected;
+  }
+
+  private async seedTestData(): Promise<void> {
+    // Clear existing data first
+    this.users.clear();
+    this.userAddresses.clear();
+
+    // Create test users with known credentials for easy testing
+    const testUsers = [
+      {
+        id: 'test-user-1',
+        email: 'john.doe@example.com',
+        password: 'password123', // Plain text - will be hashed
+        name: 'John Doe',
+        dateOfBirth: new Date('1990-01-15'),
+        gender: 'MALE',
+        subscribedToNewsletter: true,
+      },
+      {
+        id: 'test-user-2',
+        email: 'jane.smith@example.com',
+        password: 'password123', // Plain text - will be hashed
+        name: 'Jane Smith',
+        dateOfBirth: new Date('1992-03-22'),
+        gender: 'FEMALE',
+        subscribedToNewsletter: false,
+      },
+      {
+        id: 'test-user-3',
+        email: 'admin@example.com',
+        password: 'admin123', // Plain text - will be hashed
+        name: 'Admin User',
+        dateOfBirth: new Date('1985-07-10'),
+        gender: 'OTHER',
+        subscribedToNewsletter: true,
+      },
+    ];
+
+    // Create and save test users
+    for (const userData of testUsers) {
+      const user = new User(
+        userData.id,
+        new Email(userData.email),
+        new Password(userData.password), // Will be hashed automatically
+        userData.name,
+        userData.dateOfBirth,
+        new Gender(userData.gender),
+        userData.subscribedToNewsletter,
+      );
+      this.users.set(user.id, user);
+    }
+
+    // Create test addresses for the users
+    const testAddresses = [
+      {
+        id: 'addr-1',
+        userId: 'test-user-1',
+        address: new Address(
+          '123 Main Street',
+          'Bangkok',
+          'Bangkok',
+          '10110',
+          'Thailand',
+        ),
+        type: AddressType.HOME,
+        label: 'Home Address',
+        isDefault: true,
+        location: new Location(13.7563, 100.5018),
+        deliveryInstructions: 'Ring doorbell twice',
+      },
+      {
+        id: 'addr-2',
+        userId: 'test-user-2',
+        address: new Address(
+          '456 Business District',
+          'Bangkok',
+          'Bangkok',
+          '10500',
+          'Thailand',
+        ),
+        type: AddressType.WORK,
+        label: 'Office Address',
+        isDefault: true,
+        location: new Location(13.7398, 100.5441),
+        deliveryInstructions: 'Deliver to reception',
+      },
+      {
+        id: 'addr-3',
+        userId: 'test-user-1',
+        address: new Address(
+          '789 Secondary Road',
+          'Bangkok',
+          'Bangkok',
+          '10120',
+          'Thailand',
+        ),
+        type: AddressType.SHIPPING,
+        label: 'Secondary Address',
+        isDefault: false,
+        location: new Location(13.765, 100.538),
+        deliveryInstructions: 'Leave with security guard',
+      },
+    ];
+
+    // Create and save test addresses
+    for (const addrData of testAddresses) {
+      const address = UserAddress.create(
+        addrData.id,
+        addrData.userId,
+        addrData.address,
+        addrData.type,
+        addrData.label,
+        addrData.isDefault,
+        addrData.location,
+        addrData.deliveryInstructions,
+      );
+      this.userAddresses.set(address.id, address);
+    }
+
+    console.log('🌱 Test data seeded successfully:');
+    console.log('  📧 john.doe@example.com / password123');
+    console.log('  📧 jane.smith@example.com / password123');
+    console.log('  📧 admin@example.com / admin123');
   }
 
   // User operations
@@ -62,6 +194,20 @@ export class MockDatabaseAdapter implements DatabaseAdapter {
       user.delete();
       this.users.set(id, user);
     }
+  }
+
+  async permanentlyDeleteUser(id: string): Promise<void> {
+    // Remove user completely from storage
+    this.users.delete(id);
+
+    // Also remove all associated addresses
+    const userAddresses = Array.from(this.userAddresses.values()).filter(
+      (address) => address.userId === id,
+    );
+
+    userAddresses.forEach((address) => {
+      this.userAddresses.delete(address.id);
+    });
   }
 
   // User Address operations

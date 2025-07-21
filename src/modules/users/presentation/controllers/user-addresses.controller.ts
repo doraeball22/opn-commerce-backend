@@ -20,8 +20,7 @@ import {
   ApiParam,
   ApiQuery,
 } from '@nestjs/swagger';
-import { BearerTokenGuard } from '../guards/bearer-token.guard';
-import { CurrentUser } from '../decorators/current-user.decorator';
+import { JwtAuthGuard, CurrentUser, ICurrentUser } from '../../../../shared/auth';
 import { AddUserAddressDto } from '../../application/dto/add-user-address.dto';
 import { UpdateUserAddressDto } from '../../application/dto/update-user-address.dto';
 import { AddUserAddressCommand } from '../../application/commands/add-user-address.command';
@@ -33,8 +32,8 @@ import { AddressType } from '../../domain/entities/user-address.entity';
 
 @ApiTags('User Addresses')
 @Controller({ path: 'users/addresses', version: '1' })
-@UseGuards(BearerTokenGuard)
-@ApiBearerAuth()
+@UseGuards(JwtAuthGuard)
+@ApiBearerAuth('JWT-auth')
 export class UserAddressesController {
   constructor(
     private readonly commandBus: CommandBus,
@@ -54,10 +53,10 @@ export class UserAddressesController {
     description: 'Filter addresses by type',
   })
   async getUserAddresses(
-    @CurrentUser('id') userId: string,
+    @CurrentUser() user: ICurrentUser,
     @Query('type') type?: AddressType,
   ) {
-    const query = new GetUserAddressesQuery(userId, type);
+    const query = new GetUserAddressesQuery(user.id, type);
     const addresses = await this.queryBus.execute(query);
 
     return {
@@ -100,11 +99,11 @@ export class UserAddressesController {
   })
   @HttpCode(HttpStatus.CREATED)
   async addAddress(
-    @CurrentUser('id') userId: string,
+    @CurrentUser() user: ICurrentUser,
     @Body() dto: AddUserAddressDto,
   ) {
     const command = new AddUserAddressCommand(
-      userId,
+      user.id,
       dto.address,
       dto.type,
       dto.label,
@@ -156,12 +155,12 @@ export class UserAddressesController {
     description: 'Address not found',
   })
   async updateAddress(
-    @CurrentUser('id') userId: string,
+    @CurrentUser() user: ICurrentUser,
     @Param('addressId') addressId: string,
     @Body() dto: UpdateUserAddressDto,
   ) {
     const command = new UpdateUserAddressCommand(
-      userId,
+      user.id,
       addressId,
       dto.address,
       dto.type,
@@ -213,10 +212,10 @@ export class UserAddressesController {
     description: 'Address not found',
   })
   async setDefaultAddress(
-    @CurrentUser('id') userId: string,
+    @CurrentUser() user: ICurrentUser,
     @Param('addressId') addressId: string,
   ) {
-    const command = new SetDefaultAddressCommand(userId, addressId);
+    const command = new SetDefaultAddressCommand(user.id, addressId);
     const address = await this.commandBus.execute(command);
 
     return {
@@ -262,10 +261,10 @@ export class UserAddressesController {
     description: 'Address not found',
   })
   async deleteAddress(
-    @CurrentUser('id') userId: string,
+    @CurrentUser() user: ICurrentUser,
     @Param('addressId') addressId: string,
   ) {
-    const command = new DeleteUserAddressCommand(userId, addressId);
+    const command = new DeleteUserAddressCommand(user.id, addressId);
     await this.commandBus.execute(command);
 
     return {

@@ -3,8 +3,6 @@ import { CqrsModule } from '@nestjs/cqrs';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UsersController } from './presentation/controllers/users.controller';
 import { UserAddressesController } from './presentation/controllers/user-addresses.controller';
-import { AuthGuard } from './presentation/guards/auth.guard';
-import { BearerTokenGuard } from './presentation/guards/bearer-token.guard';
 import { UserRepository } from './domain/repositories/user.repository';
 import { UserAddressRepository } from './domain/repositories/user-address.repository';
 import { AdapterUserRepository } from './infrastructure/repositories/adapter-user.repository';
@@ -107,9 +105,6 @@ import {
     // Validators
     AddressValidationService,
 
-    // Presentation
-    AuthGuard,
-    BearerTokenGuard,
   ],
   exports: [
     'UserRepository',

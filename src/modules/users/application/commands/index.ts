@@ -6,15 +6,19 @@ export * from './delete-user.command';
 export * from './delete-user.handler';
 export * from './change-password.command';
 export * from './change-password.handler';
+export * from './login-user.command';
+export * from './login-user.handler';
 
 import { RegisterUserCommandHandler } from './register-user.handler';
 import { UpdateUserCommandHandler } from './update-user.handler';
 import { DeleteUserCommandHandler } from './delete-user.handler';
 import { ChangePasswordCommandHandler } from './change-password.handler';
+import { LoginUserHandler } from './login-user.handler';
 
 export const CommandHandlers = [
   RegisterUserCommandHandler,
   UpdateUserCommandHandler,
   DeleteUserCommandHandler,
   ChangePasswordCommandHandler,
+  LoginUserHandler,
 ];

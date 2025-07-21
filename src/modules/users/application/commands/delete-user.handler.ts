@@ -15,7 +15,7 @@ export class DeleteUserCommandHandler
   async execute(command: DeleteUserCommand): Promise<void> {
     const { userId } = command;
 
-    // Delete user (soft delete)
-    await this.userRepository.delete(userId);
+    // Permanently delete user and all associated data (GDPR compliance)
+    await this.userRepository.permanentlyDelete(userId);
   }
 }

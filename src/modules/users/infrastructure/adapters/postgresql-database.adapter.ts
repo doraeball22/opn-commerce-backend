@@ -143,6 +143,21 @@ export class PostgreSQLDatabaseAdapter implements DatabaseAdapter {
     }
   }
 
+  async permanentlyDeleteUser(id: string): Promise<void> {
+    try {
+      await this.dataSource.manager.transaction(async (manager) => {
+        // Delete all user addresses first (foreign key constraint)
+        await manager.delete(UserAddressEntity, { userId: id });
+
+        // Then delete the user
+        await manager.delete(UserEntity, { id });
+      });
+    } catch (error) {
+      console.error('Error permanently deleting user:', error);
+      throw new Error(`Failed to permanently delete user: ${error.message}`);
+    }
+  }
+
   // User Address operations
   async saveUserAddress(address: UserAddress): Promise<UserAddress> {
     try {

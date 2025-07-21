@@ -6,6 +6,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UsersModule } from './modules/users/users.module';
 import { DatabaseModule } from './modules/database/database.module';
+import { AuthModule } from './shared/auth/auth.module';
 import { AllExceptionsFilter } from './shared/exceptions/all-exceptions.filter';
 import { appConfig, databaseConfig, configValidationSchema } from './config';
 
@@ -32,6 +33,7 @@ const getDatabaseModule = () => {
       cache: true,
     }),
     getDatabaseModule(),
+    AuthModule,
     UsersModule,
   ],
   controllers: [AppController],

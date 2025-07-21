@@ -5,10 +5,11 @@ The Users module handles all user-related functionality including registration, 
 ## 🎯 Features
 
 - ✅ **User Registration**: Create new user accounts
+- ✅ **User Login**: JWT-based authentication
 - ✅ **Profile Management**: View and update user profiles
 - ✅ **Password Management**: Secure password changes
 - ✅ **Account Deletion**: GDPR-compliant account removal
-- ✅ **Authentication**: Bearer token-based authentication
+- ✅ **JWT Authentication**: Token-based security
 - ✅ **Input Validation**: Comprehensive request validation
 - ✅ **Error Handling**: Consistent error responses
 
@@ -63,9 +64,10 @@ Most endpoints require authentication via Bearer token:
 }
 ```
 
-**Available test tokens:**
-- `faketoken_user1` → john.doe@example.com
-- `faketoken_user2` → jane.smith@example.com
+**Login with test credentials (when using mock database):**
+- `john.doe@example.com` / `password123`
+- `jane.smith@example.com` / `password123`
+- `admin@example.com` / `admin123`
 
 ---
 
@@ -144,7 +146,65 @@ curl -X POST http://localhost:8091/v1/users/register \
 
 ---
 
-### 2. Get User Profile
+### 2. User Login
+Authenticate user and receive JWT token for API access.
+
+```http
+POST /v1/users/login
+```
+
+**Request Body:**
+```typescript
+interface LoginRequest {
+  email: string;           // Valid email format
+  password: string;        // User's password
+}
+```
+
+**Example Request:**
+```bash
+curl -X POST http://localhost:8091/v1/users/login \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "john.doe@example.com",
+    "password": "password123"
+  }'
+```
+
+**Response:**
+```typescript
+// Success (200)
+{
+  "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "tokenType": "Bearer",
+  "expiresIn": 86400,      // 24 hours in seconds
+  "user": {
+    "id": "test-user-1",
+    "email": "john.doe@example.com",
+    "name": "John Doe"
+  }
+}
+
+// Error (401) - Invalid credentials
+{
+  "statusCode": 401,
+  "timestamp": "2024-01-01T00:00:00.000Z",
+  "path": "/v1/users/login",
+  "message": "Invalid email or password"
+}
+
+// Error (401) - Account deactivated
+{
+  "statusCode": 401,
+  "timestamp": "2024-01-01T00:00:00.000Z",
+  "path": "/v1/users/login",
+  "message": "Account has been deactivated"
+}
+```
+
+---
+
+### 3. Get User Profile
 Retrieve authenticated user's profile information.
 
 ```http
@@ -194,7 +254,7 @@ curl -X GET http://localhost:8091/v1/users/profile \
 
 ---
 
-### 3. Update User Profile
+### 4. Update User Profile
 Update user profile information. Only provided fields will be updated.
 
 ```http
@@ -252,7 +312,7 @@ curl -X PUT http://localhost:8091/v1/users/profile \
 
 ---
 
-### 4. Change Password
+### 5. Change Password
 Change user password with current password verification.
 
 ```http
@@ -314,7 +374,7 @@ curl -X PUT http://localhost:8091/v1/users/password \
 
 ---
 
-### 5. Delete Account
+### 6. Delete Account
 Permanently delete user account (GDPR compliance).
 
 ```http
@@ -553,9 +613,17 @@ export const useUser = () => {
 3. Add Bearer token to collection auth
 4. Import endpoints and test
 
-### Mock Data Available
-- **User 1**: john.doe@example.com (token: `faketoken_user1`)
-- **User 2**: jane.smith@example.com (token: `faketoken_user2`)
+### Mock Data Available (when using DATABASE_TYPE=mock)
+- **User 1**: john.doe@example.com / password123
+- **User 2**: jane.smith@example.com / password123
+- **Admin**: admin@example.com / admin123
+
+**To get a JWT token for testing:**
+```bash
+curl -X POST http://localhost:8091/v1/users/login \
+  -H "Content-Type: application/json" \
+  -d '{"email": "john.doe@example.com", "password": "password123"}'
+```
 
 ---
 
@@ -608,7 +676,26 @@ curl -X GET http://localhost:8091/v1/ \
   -H "Content-Type: application/json"
 ```
 
-#### 2. User Registration
+#### 2. User Login
+```bash
+# Login with test credentials to get JWT token
+curl -X POST http://localhost:8091/v1/users/login \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "john.doe@example.com",
+    "password": "password123"
+  }'
+
+# Test login with invalid credentials
+curl -X POST http://localhost:8091/v1/users/login \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "john.doe@example.com",
+    "password": "wrongpassword"
+  }'
+```
+
+#### 3. User Registration
 ```bash
 # Register a new user with all required fields
 curl -X POST http://localhost:8091/v1/users/register \
@@ -630,7 +717,7 @@ curl -X POST http://localhost:8091/v1/users/register \
   }'
 ```
 
-#### 3. User Profile Management
+#### 4. User Profile Management
 ```bash
 # Get user profile
 curl -X GET http://localhost:8091/v1/users/profile \
@@ -653,7 +740,7 @@ curl -X DELETE http://localhost:8091/v1/users/profile \
   -H "Content-Type: application/json"
 ```
 
-#### 4. Password Management
+#### 5. Password Management
 ```bash
 # Change password
 curl -X PUT http://localhost:8091/v1/users/password \
@@ -665,7 +752,7 @@ curl -X PUT http://localhost:8091/v1/users/password \
   }'
 ```
 
-#### 5. Address Management
+#### 6. Address Management
 ```bash
 # Get all user addresses
 curl -X GET http://localhost:8091/v1/users/addresses \
@@ -721,7 +808,7 @@ curl -X DELETE http://localhost:8091/v1/users/addresses/ADDRESS_ID \
   -H "Content-Type: application/json"
 ```
 
-#### 6. Error Testing
+#### 7. Error Testing
 ```bash
 # Test missing authorization
 curl -X GET http://localhost:8091/v1/users/profile \

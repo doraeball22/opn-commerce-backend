@@ -35,6 +35,10 @@ export class AdapterUserRepository implements UserRepository {
     await this.databaseAdapter.deleteUser(id);
   }
 
+  async permanentlyDelete(id: string): Promise<void> {
+    await this.databaseAdapter.permanentlyDeleteUser(id);
+  }
+
   async exists(email: string): Promise<boolean> {
     const user = await this.databaseAdapter.findUserByEmail(email);
     return !!user;
