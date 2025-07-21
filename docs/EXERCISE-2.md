@@ -417,49 +417,125 @@ sequenceDiagram
 
 ### Database Scaling Strategy
 
-```mermaid
-graph LR
-    subgraph "Application Tier"
-        APP1[App Instance 1]
-        APP2[App Instance 2]
-        APP3[App Instance 3]
-    end
+Our system leverages **CQRS (Command Query Responsibility Segregation)** pattern, allowing us to use a simpler and more maintainable scaling approach without the complexity of sharding.
 
-    subgraph "Database Tier"
-        subgraph "Primary Cluster"
-            MASTER[(Master DB<br/>Write Operations)]
-            SLAVE1[(Read Replica 1)]
-            SLAVE2[(Read Replica 2)]
+```mermaid
+graph TB
+    subgraph "Application Layer (CQRS)"
+        subgraph "Write Operations"
+            CMD1[Command Service 1]
+            CMD2[Command Service 2]
         end
         
-        subgraph "Sharding Strategy"
-            SHARD1[(Shard 1<br/>Users A-H)]
-            SHARD2[(Shard 2<br/>Users I-P)]
-            SHARD3[(Shard 3<br/>Users Q-Z)]
+        subgraph "Read Operations"
+            QUERY1[Query Service 1]
+            QUERY2[Query Service 2]
+            QUERY3[Query Service 3]
         end
     end
 
-    subgraph "Caching Strategy"
-        L1[L1 Cache<br/>Application]
-        L2[L2 Cache<br/>Redis]
-        L3[L3 Cache<br/>CDN]
+    subgraph "Database Layer"
+        subgraph "Write Database"
+            WRITE_DB[(PostgreSQL Primary<br/>Optimized for Writes)]
+        end
+        
+        subgraph "Read Databases"
+            READ_DB1[(Read Replica 1<br/>Load Balanced)]
+            READ_DB2[(Read Replica 2<br/>Load Balanced)]
+            READ_DB3[(Read Replica 3<br/>Geographic)]
+        end
     end
 
-    APP1 --> L1
-    APP2 --> L1
-    APP3 --> L1
+    subgraph "Caching Layer (AWS)"
+        subgraph "ElastiCache"
+            REDIS_CLUSTER[Redis Cluster<br/>Session & Hot Data]
+            MEMCACHED[Memcached<br/>Query Results]
+        end
+        
+        subgraph "Application Cache"
+            L1_CACHE[In-Memory Cache<br/>Frequently Used Data]
+        end
+        
+        subgraph "CDN"
+            CLOUDFRONT[CloudFront<br/>Static Assets]
+        end
+    end
+
+    %% Write flow
+    CMD1 --> WRITE_DB
+    CMD2 --> WRITE_DB
     
-    L1 --> L2
-    L2 --> MASTER
-    L2 --> SLAVE1
-    L2 --> SLAVE2
+    %% Read flow with caching
+    QUERY1 --> L1_CACHE
+    QUERY2 --> L1_CACHE
+    QUERY3 --> L1_CACHE
     
-    MASTER --> SLAVE1
-    MASTER --> SLAVE2
+    L1_CACHE --> REDIS_CLUSTER
+    L1_CACHE --> MEMCACHED
     
-    APP1 -.-> SHARD1
-    APP2 -.-> SHARD2
-    APP3 -.-> SHARD3
+    REDIS_CLUSTER --> READ_DB1
+    REDIS_CLUSTER --> READ_DB2
+    MEMCACHED --> READ_DB1
+    MEMCACHED --> READ_DB2
+    
+    %% Replication
+    WRITE_DB -.->|Async Replication| READ_DB1
+    WRITE_DB -.->|Async Replication| READ_DB2
+    WRITE_DB -.->|Async Replication| READ_DB3
+    
+    %% Cache invalidation
+    WRITE_DB -.->|Invalidate| REDIS_CLUSTER
+    WRITE_DB -.->|Invalidate| MEMCACHED
+
+    classDef writeClass fill:#ffebee,stroke:#c62828,stroke-width:2px
+    classDef readClass fill:#e3f2fd,stroke:#1565c0,stroke-width:2px
+    classDef cacheClass fill:#f3e5f5,stroke:#6a1b9a,stroke-width:2px
+
+    class CMD1,CMD2,WRITE_DB writeClass
+    class QUERY1,QUERY2,QUERY3,READ_DB1,READ_DB2,READ_DB3 readClass
+    class REDIS_CLUSTER,MEMCACHED,L1_CACHE,CLOUDFRONT cacheClass
+```
+
+#### Key Benefits of CQRS-based Scaling:
+
+1. **Simplified Architecture**: No complex sharding logic or data distribution
+2. **Independent Scaling**: Scale reads and writes independently based on actual load
+3. **Optimized Performance**: 
+   - Write database optimized for transactional consistency
+   - Read replicas optimized for complex queries and reporting
+4. **Cache Strategy**:
+   - **L1 Cache**: In-memory application cache for immediate response
+   - **AWS ElastiCache Redis**: Distributed cache for session data and frequently accessed objects
+   - **AWS ElastiCache Memcached**: Query result caching with automatic expiration
+   - **CloudFront CDN**: Static asset and API response caching at edge locations
+
+#### AWS ElastiCache Configuration:
+
+```yaml
+# Redis Cluster for Session & Object Cache
+Redis:
+  Engine: redis
+  CacheNodeType: cache.r6g.xlarge
+  NumCacheNodes: 3
+  AutomaticFailoverEnabled: true
+  MultiAZEnabled: true
+  Features:
+    - Session storage
+    - Shopping cart data
+    - User preferences
+    - Hot product data
+    - Real-time inventory
+
+# Memcached for Query Results
+Memcached:
+  Engine: memcached
+  CacheNodeType: cache.m6g.large
+  NumCacheNodes: 4
+  Features:
+    - Product search results
+    - Category listings
+    - Computed aggregations
+    - API response caching
 ```
 
 ## 🔒 Security Architecture
