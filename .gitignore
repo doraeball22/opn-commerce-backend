@@ -59,3 +59,28 @@ pids
 
 # Diagnostic reports (https://nodejs.org/api/report.html)
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
+
+# AWS Elastic Beanstalk deployment files
+.elasticbeanstalk/
+*.zip
+opn-commerce-backend-eb.zip
+
+# Deployment artifacts
+deploy-to-eb.sh
+eb-setup-commands.sh
+DEPLOYMENT_GUIDE.md
+deployment-checklist.md
+
+# System and cache files
+Thumbs.db
+.DS_Store
+*.swp
+*.swo
+*~
+
+# Runtime and process files
+*.tsbuildinfo
+server.log
+
+# Additional IDE files
+.vscode/settings.json
