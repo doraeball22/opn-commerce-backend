@@ -253,11 +253,11 @@ graph TB
     end
 
     subgraph "External Services"
-        PAYMENT_GATEWAY[Payment Gateway<br/>(Stripe, PayPal)]
-        SHIPPING[Shipping APIs<br/>(DHL, FedEx)]
-        EMAIL[Email Service<br/>(SendGrid)]
-        SMS[SMS Service<br/>(Twilio)]
-        GEOCODING[Geocoding API<br/>(Google Maps)]
+        PAYMENT_GATEWAY[Payment Gateway<br/>Stripe, PayPal]
+        SHIPPING[Shipping APIs<br/>DHL, FedEx]
+        EMAIL[Email Service<br/>SendGrid]
+        SMS[SMS Service<br/>Twilio]
+        GEOCODING[Geocoding API<br/>Google Maps]
     end
 
     subgraph "Infrastructure"
